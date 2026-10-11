@@ -6,7 +6,9 @@ import time
 class GeminiLLM:
     def __init__(self, model, temperature=0.0):
         from google import genai  # pip install google-genai
-        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        from google.genai import types
+        # no default timeout: a dead connection would hang a run forever; 120 s then the retry loop takes over
+        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"], http_options=types.HttpOptions(timeout=120_000))
         self.model_id = model
         self.temperature = temperature
         self.usage = {"prompt_tokens": 0, "completion_tokens": 0, "calls": 0}
