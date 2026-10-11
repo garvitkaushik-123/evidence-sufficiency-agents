@@ -81,3 +81,13 @@ def test_end_to_end_log_has_all_fields(tmp_path):
     # resumable: a second call adds nothing
     run_all(qs, MockLLM(script), bm, out)
     assert len(out.read_text().splitlines()) == 4
+
+
+def test_evaluate_rules_and_metrics():
+    from ess.evaluate import auroc, f1, norm, stop_step
+    assert norm("The Eiffel Tower!") == "eiffel tower" and f1("Eiffel Tower", "the eiffel tower") == 1.0
+    step = lambda t, v, p, cov: {"step": t, "verdict": v, "probability": p, "context_pids": ["g"] if cov else []}
+    r = {"gold_pids": ["g"], "steps": [step(1, "SUFFICIENT", .6, False), step(2, "INSUFFICIENT", .9, True), step(3, "SUFFICIENT", .9, True)]}
+    assert stop_step(("self",), r) == 1 and stop_step(("tau", .8), r) == 2
+    assert stop_step(("oracle",), r) == 2 and stop_step(("fixed", 5), r) == 3
+    assert auroc([.9, .1], [1, 0]) == 1.0
