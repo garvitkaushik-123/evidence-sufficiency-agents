@@ -7,6 +7,7 @@ dependencies = []
 
 [project.optional-dependencies]
 gemini = ["google-genai"]
+data = ["pyarrow"]
 dev = ["pytest"]
 
 [tool.setuptools.packages.find]
