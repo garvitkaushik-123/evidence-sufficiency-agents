@@ -58,7 +58,8 @@ def run_question(q, llm, retriever, T=5, k=3, run_id="", retriever_name="bm25"):
         if t == 1:
             query = q["question"]
         else:
-            query = llm.complete(QUERY_PROMPT.format(question=q["question"], evidence=fmt_evidence(context))).strip().splitlines()[0]
+            lines = llm.complete(QUERY_PROMPT.format(question=q["question"], evidence=fmt_evidence(context))).strip().splitlines()
+            query = lines[0] if lines else q["question"]  # empty model reply: fall back to the question
         hits = retriever.search(query, k=k, exclude=seen)
         for h in hits:
             seen.add(h["pid"])
