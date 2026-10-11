@@ -11,7 +11,7 @@ class GeminiLLM:
         self.temperature = temperature
         self.usage = {"prompt_tokens": 0, "completion_tokens": 0, "calls": 0}
 
-    def complete(self, prompt, retries=4):
+    def complete(self, prompt, retries=6):
         from google.genai import types
         for attempt in range(retries + 1):
             try:
@@ -26,7 +26,7 @@ class GeminiLLM:
             except Exception:
                 if attempt == retries:
                     raise
-                time.sleep(2 ** (attempt + 1))
+                time.sleep(min(60, 5 * 2 ** attempt))  # free-tier 429 asks for ~25s
 
 
 class MockLLM:
