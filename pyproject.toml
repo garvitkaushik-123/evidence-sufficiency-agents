@@ -1,0 +1,16 @@
+[project]
+name = "ess"
+version = "0.1.0"
+description = "Evidence sufficiency judgments and stopping rules in multi-step retrieval agents"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+gemini = ["google-genai"]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
