@@ -21,7 +21,7 @@ class GeminiLLM:
                 u = r.usage_metadata
                 self.usage["calls"] += 1
                 self.usage["prompt_tokens"] += (u.prompt_token_count or 0) if u else 0
-                self.usage["completion_tokens"] += (u.candidates_token_count or 0) if u else 0
+                self.usage["completion_tokens"] += ((u.candidates_token_count or 0) + (u.thoughts_token_count or 0)) if u else 0  # thinking is billed as output
                 return r.text or ""
             except Exception:
                 if attempt == retries:
