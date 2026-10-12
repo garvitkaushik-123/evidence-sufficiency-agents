@@ -17,7 +17,7 @@ How this project differs:
 3. **The context moves.** Our evidence grows step by step with BM25 over a pooled corpus, so we observe how often a verdict flips and how much accuracy later steps add.
 
 Where results line up (not independent confirmation, different setups):
-- Correct answers without full evidence are common. Our error analysis found about 3 in 4 gold-coverage "premature stops" were already answerable from the retrieved text, and our taxonomy mirrors their Table 2 (parametric completion, ambiguous question).
+- Correct answers without full evidence are common. Our error analysis found about 7 in 10 gold-coverage "premature stops" were already answerable from the retrieved text, and our taxonomy mirrors their Table 2 (parametric completion, ambiguous question).
 - Our second sufficiency label is their "contains the ground truth" baseline. Their numbers say it is reasonable but imperfect (precision 0.87, recall 0.76 against humans), so we report it next to gold coverage and say the truth lies between them.
 - They use a continuous confidence (P(Correct), the probability the answer is right) as one of two signals. Our judge asks for the probability that the evidence suffices, and the small Gemini model answers exactly 0 or 1 in 93 to 94% of judgements while the strong model's probabilities are less extreme (61% and 25% exactly 0 or 1 on HotpotQA and MuSiQue, 91% and 75% within 0.1 of an extreme). Different quantity, so do not claim a contradiction.
 

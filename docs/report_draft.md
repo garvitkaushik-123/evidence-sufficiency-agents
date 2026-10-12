@@ -4,7 +4,7 @@
 
 ## Abstract
 
-A retrieval agent that searches in several steps must decide when it has seen enough. We let two Gemini models retrieve for five steps over a BM25 index and, after every step, state whether the evidence suffices, how likely that is, and their current answer. Logging every step lets us replay any stopping rule offline from one run per model. On 500 HotpotQA and 500 MuSiQue questions we ask how often "enough" is true, whether the judgement predicts a correct answer, and which rule gives the best accuracy for the retrieval spent. Stopping at the first "sufficient" verdict uses 34 to 67% fewer steps than always taking five, at an answer-F1 cost that is not significant in three of four model and dataset pairs and about 0.025 in the fourth. Model choice moves F1 by 0.07 to 0.26, far more than any rule. Against "all gold paragraphs retrieved" the verdict is right 65 to 93% of the time, but a manual read of 50 apparent premature stops found about three in four already answerable from the retrieved text, so gold coverage understates it. Stated probabilities sit near 0 and 1 and are poorly calibrated; much of their apparent power to predict correctness comes from answers that abstain, and on answered steps the small model's probability is no better than chance.
+A retrieval agent that searches in several steps must decide when it has seen enough. We let two Gemini models retrieve for five steps over a BM25 index and, after every step, state whether the evidence suffices, how likely that is, and their current answer. Logging every step lets us replay any stopping rule offline from one run per model. On 500 HotpotQA and 500 MuSiQue questions we ask how often "enough" is true, whether the judgement predicts a correct answer, and which rule gives the best accuracy for the retrieval spent. Stopping at the first "sufficient" verdict uses 34 to 67% fewer steps than always taking five, at an answer-F1 cost that is not significant in three of four model and dataset pairs and about 0.025 in the fourth. Model choice moves F1 by 0.07 to 0.26, far more than any rule. Against "all gold paragraphs retrieved" the verdict is right 65 to 93% of the time, but a read of 50 apparent premature stops found about 7 in 10 already answerable from the retrieved text, so gold coverage understates it. Stated probabilities sit near 0 and 1 and are poorly calibrated; much of their apparent power to predict correctness comes from answers that abstain, and on answered steps the small model's probability is no better than chance.
 
 ## 1. Introduction
 
@@ -85,18 +85,18 @@ Over all steps the stated probability predicts correctness modestly (AUROC 0.65 
 
 ## 5. Error analysis
 
-We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** As a second pass we checked every case mechanically: all 37 cases tagged answerable have the answer text (gold or the model's) in the retrieved evidence or are yes/no questions; the 13 cases tagged otherwise were re-read, and three borderline "parametric" tags were kept (the answer string is present but the link that justifies it is not). No tag changed. A string match does not prove support, so treat the counts as a first pass.
+We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** It was done in two passes by the same model. The second used a stricter written rule (every link in the chain must be stated in the shown text, each answerable tag carries its supporting sentence) and changed 3 of 50 tags; this measures consistency of one annotator, not agreement between annotators. A string match does not prove support, so treat the counts as a first pass.
 
 | cause | HotpotQA | MuSiQue |
 |---|---|---|
-| answerable from the retrieved evidence | 20 | 17 |
-| parametric (answer from the model's own knowledge) | 3 | 2 |
+| answerable from the retrieved evidence | 21 | 15 |
+| parametric (answer from the model's own knowledge) | 2 | 4 |
 | ambiguous question or gold label | 0 | 3 |
 | partial answer | 2 | 0 |
 | distractor taken as evidence | 0 | 2 |
 | needed hop never retrieved | 0 | 1 |
 
-In 37 of 50 cases the answer was already supported by the retrieved text; the missing gold paragraph was a bridge or descriptor page. An automatic check on all premature stops agrees: the gold answer text is already in the evidence in 76% of the strong model's premature stops on both datasets and in 60% (HotpotQA) and 50% (MuSiQue) of the small model's. So gold coverage is a conservative proxy for sufficiency, and the small model stops genuinely too early more often. Real failures are few and instructive: taking a career scoring record for a single-season record, picking the wrong person of the same name, and skipping the hop that links an author to the statement being asked about. Several exact-match misses are formatting only (for example "Poland" against "Polish state"), so F1 is the fairer metric.
+In 36 of 50 cases the answer was already supported by the retrieved text; the missing gold paragraph was a bridge or descriptor page. An automatic check on all premature stops agrees: the gold answer text is already in the evidence in 76% of the strong model's premature stops on both datasets and in 60% (HotpotQA) and 50% (MuSiQue) of the small model's. So gold coverage is a conservative proxy for sufficiency, and the small model stops genuinely too early more often. Real failures are few and instructive: taking a career scoring record for a single-season record, picking the wrong person of the same name, and skipping the hop that links an author to the statement being asked about. Several exact-match misses are formatting only (for example "Poland" against "Polish state"), so F1 is the fairer metric.
 
 ## 6. Limitations
 
