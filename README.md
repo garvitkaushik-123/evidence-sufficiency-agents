@@ -6,6 +6,18 @@ The agent always runs all 5 retrieval steps and logs a sufficiency verdict, a pr
 
 "Sufficient" is defined objectively: all gold supporting paragraphs (from HotpotQA / MuSiQue annotations) are in the agent's context.
 
+## Results (500 questions per dataset, two models)
+
+Models: `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong). All numbers are in `results/`; every comparison below has a paired bootstrap test in `results/paired_tests.md`.
+
+- **Self-judging saves retrieval at about the same accuracy.** Stopping at the first SUFFICIENT verdict uses 1.6 to 1.8 of 5 steps on HotpotQA (65 to 67% fewer) and 2.9 to 3.3 on MuSiQue (34 to 41% fewer). Against always running 5 steps, answer F1 differs by -0.003 on MuSiQue (both models, not significant) and by -0.010 (not significant) to -0.025 (significant) on HotpotQA for the strong and small model.
+- **The model matters far more than the stopping rule.** Strong minus small F1 is +0.07 to +0.26 for every rule on both datasets (all significant).
+- **How often is "enough" true?** Against "all gold paragraphs retrieved" the verdict has precision 0.90 to 0.93 on HotpotQA and 0.65 to 0.78 on MuSiQue. Against "the gold answer text is in the retrieved evidence" precision is 0.96 to 0.98 and 0.86 to 0.95. A manual read of 50 premature stops (`results/error_analysis/`) found about 3 in 4 already answerable from what was retrieved, so gold coverage understates the verdict's precision. The truth lies between the two labels.
+- **Stated probabilities are almost always 0 or 1**, so threshold rules coincide and calibration is poor (ECE 0.24 to 0.34; AUROC 0.65 to 0.84 against answer exact match).
+- **More steps help on MuSiQue, not on HotpotQA.** 3 vs 5 fixed steps: no difference on HotpotQA, -0.04 F1 on MuSiQue. Even oracle stopping adds at most 0.02 F1 over self-judge.
+
+Limits: two Gemini models, 500 questions per dataset, pooled corpus easier than open-domain search, the error analysis was tagged by an LLM and needs a human check. The logs in `runs/` are the full per-step records, so every number can be recomputed without an API key: `make setup data eval report` (the `data` step only downloads the public datasets; it is needed for the answer-in-context label).
+
 ## Reproduce
 
 ```
@@ -29,11 +41,11 @@ Individual steps: `make setup`, `make data`, `make run`, `make eval`, `make repo
 
 Question-level: `run, model, retriever, question_id, dataset, question, gold_answer, aliases, gold_pids, T, k`.
 Per step: `step, query, retrieved_pids, context_pids (cumulative), verdict, probability, answer, raw_judge, parse_ok`.
-Gold coverage at step t = `gold_pids ⊆ context_pids`.
+Gold coverage at step t = `gold_pids ⊆ context_pids`. The four full-run logs are committed (`runs/<dataset>_n500_seed0__<model>.jsonl`, about 5 MB); pilot logs and run stdout are not. They contain text from the public HotpotQA (CC BY-SA 4.0) and MuSiQue datasets; see their pages for licences.
 
 ## Evaluation (`scripts/evaluate.py`)
 
-- RQ1: precision / recall / F1 of the SUFFICIENT verdict vs gold coverage over all (question, step) pairs; premature stops (says sufficient, is not) and over-retrieval (says insufficient, already is).
+- RQ1: precision / recall / F1 of the SUFFICIENT verdict over all (question, step) pairs, against two labels: all gold paragraphs in context, and the gold answer text in context (yes/no questions skipped); premature stops (says sufficient, is not) and over-retrieval (says insufficient, already is).
 - RQ2: AUROC and expected calibration error of the stated probability against answer exact-match.
 - RQ3: average steps, EM and F1 (bootstrap 95% CI) for fixed-1/3/5, self-judge, thresholds 0.5 to 0.95, and oracle. Oracle runs to step 5 when gold is never covered.
 

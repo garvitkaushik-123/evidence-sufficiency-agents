@@ -7,7 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from ess.evaluate import RULES, load, per_question, rq2, rule_table, score
+from ess.evaluate import RULES, answer_in_context, corpus_for, load, per_question, rq1, rq2, rule_table, score
 
 MODELS = {"gemini-3.5-flash-lite": "#2a78d6", "gemini-3.8-flash": "#eb6834"}
 DATASETS = {"hotpotqa": "HotpotQA", "musique": "MuSiQue"}
@@ -88,6 +88,16 @@ def tables():
             for name, (st, em, f, ci) in rule_table(runs[d, m]).items():
                 out.append(f"| {name} | {st:.2f} | {em:.3f} | {f:.3f} | [{ci[0]:.3f}, {ci[1]:.3f}] |")
             out.append("")
+    if corpus_for(runs["hotpotqa", next(iter(MODELS))]):
+        out += ["# RQ1 under two sufficiency labels", "",
+                "Verdict SUFFICIENT vs (a) all gold paragraphs in context, (b) gold answer text in context (yes/no questions skipped).",
+                "", "| dataset | model | label | precision | recall | F1 | premature | over-retrieval | pairs |", "|---|---|---|---|---|---|---|---|---|"]
+        for d, dname in DATASETS.items():
+            for m in MODELS:
+                corpus = corpus_for(runs[d, m])
+                for name, label in (("gold coverage", None), ("answer in context", lambda r, s: answer_in_context(r, s, corpus))):
+                    x = rq1(runs[d, m]) if label is None else rq1(runs[d, m], label)
+                    out.append(f"| {dname} | {m} | {name} | {x['precision']:.3f} | {x['recall']:.3f} | {x['f1']:.3f} | {x['premature']} | {x['over_retrieval']} | {x['n']} |")
     Path("results/rule_tables.md").write_text("\n".join(out))
 
 

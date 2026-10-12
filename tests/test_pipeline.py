@@ -99,3 +99,14 @@ def test_paired_diff_keeps_sign_and_pairing():
     b = {i: (3, 0.5) for i in range(40)}
     d, (lo, hi), ds = paired_diff(a, b, n_boot=200)
     assert abs(d - 0.4) < 1e-9 and lo > 0 and ds == -2
+
+
+def test_answer_in_context_label():
+    from ess.evaluate import answer_in_context, rq1
+    corpus = {"a": {"title": "Paris", "text": "Paris is the capital of France."}, "b": {"title": "Rome", "text": "Rome is in Italy."}}
+    r = {"gold_answer": "Paris", "aliases": [], "steps": [
+        {"verdict": "INSUFFICIENT", "context_pids": ["b"]}, {"verdict": "SUFFICIENT", "context_pids": ["a", "b"]}]}
+    assert [answer_in_context(r, s, corpus) for s in r["steps"]] == [False, True]
+    assert answer_in_context({**r, "gold_answer": "yes"}, r["steps"][0], corpus) is None
+    out = rq1([r], lambda r, s: answer_in_context(r, s, corpus))
+    assert out["precision"] == 1.0 and out["recall"] == 1.0 and out["n"] == 2

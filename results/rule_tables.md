@@ -59,3 +59,18 @@
 | tau-0.9 | 3.46 | 0.514 | 0.673 | [0.639, 0.705] |
 | tau-0.95 | 3.48 | 0.514 | 0.673 | [0.638, 0.705] |
 | oracle | 3.40 | 0.522 | 0.688 | [0.655, 0.720] |
+
+# RQ1 under two sufficiency labels
+
+Verdict SUFFICIENT vs (a) all gold paragraphs in context, (b) gold answer text in context (yes/no questions skipped).
+
+| dataset | model | label | precision | recall | F1 | premature | over-retrieval | pairs |
+|---|---|---|---|---|---|---|---|---|
+| HotpotQA | gemini-3.5-flash-lite | gold coverage | 0.900 | 0.945 | 0.922 | 211 | 110 | 2500 |
+| HotpotQA | gemini-3.5-flash-lite | answer in context | 0.958 | 0.912 | 0.934 | 83 | 183 | 2345 |
+| HotpotQA | gemini-3.8-flash | gold coverage | 0.929 | 0.952 | 0.940 | 147 | 97 | 2500 |
+| HotpotQA | gemini-3.8-flash | answer in context | 0.980 | 0.912 | 0.945 | 38 | 183 | 2345 |
+| MuSiQue | gemini-3.5-flash-lite | gold coverage | 0.646 | 0.771 | 0.703 | 452 | 245 | 2500 |
+| MuSiQue | gemini-3.5-flash-lite | answer in context | 0.863 | 0.685 | 0.764 | 175 | 507 | 2500 |
+| MuSiQue | gemini-3.8-flash | gold coverage | 0.783 | 0.790 | 0.787 | 245 | 236 | 2500 |
+| MuSiQue | gemini-3.8-flash | answer in context | 0.946 | 0.650 | 0.770 | 61 | 577 | 2500 |

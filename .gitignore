@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .venv/
 raw/
-runs/
+runs/*.log
+runs/*pilot*
 .env
 *.egg-info/

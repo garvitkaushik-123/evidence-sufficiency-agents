@@ -90,12 +90,26 @@ def paired_diff(a, b, n_boot=2000, seed=0):
     return sum(d) / n, (boots[int(.025 * n_boot)], boots[int(.975 * n_boot)]), sum(a[i][0] - b[i][0] for i in ids) / n
 
 
-def rq1(recs):
-    """Verdict SUFFICIENT vs gold coverage over all (question, step) pairs."""
+def answer_in_context(r, s, corpus):
+    """Second sufficiency label: the gold answer text (or an alias) appears in the retrieved paragraphs.
+    None for yes/no questions, where a string match says nothing."""
+    golds = [norm(g) for g in [r["gold_answer"], *r["aliases"]]]
+    if golds[0] in ("yes", "no"):
+        return None
+    txt = " " + " ".join(norm(corpus[p]["title"] + " " + corpus[p]["text"]) for p in s["context_pids"]) + " "
+    return any(g and f" {g} " in txt for g in golds)
+
+
+def rq1(recs, label=covered):
+    """Verdict SUFFICIENT vs a sufficiency label (default: gold coverage) over all (question, step) pairs.
+    Pairs where the label is None are skipped."""
     tp = fp = fn = tn = 0
     for r in recs:
         for s in r["steps"]:
-            say, gold = s["verdict"] == "SUFFICIENT", covered(r, s)
+            gold = label(r, s)
+            if gold is None:
+                continue
+            say = s["verdict"] == "SUFFICIENT"
             tp += say and gold
             fp += say and not gold   # premature stop
             fn += (not say) and gold  # over-retrieval
@@ -103,6 +117,14 @@ def rq1(recs):
     p, rc = tp / max(tp + fp, 1), tp / max(tp + fn, 1)
     return {"precision": p, "recall": rc, "f1": 2 * p * rc / max(p + rc, 1e-9),
             "premature": fp, "over_retrieval": fn, "n": tp + fp + fn + tn}
+
+
+def corpus_for(recs, n=500, seed=0):
+    """Pooled corpus of the sampled questions behind a log; None if raw/ has not been built (make data)."""
+    from pathlib import Path
+    from ess import data
+    path = Path(f"raw/{recs[0]['dataset']}_n{n}_seed{seed}.jsonl")
+    return {p["pid"]: p for p in data.build_corpus(data.load_questions(path))} if path.exists() else None
 
 
 def auroc(probs, labels):
@@ -132,7 +154,11 @@ def rq2(recs):
 def report(path):
     recs = load(path)
     print(f"== {path} ({len(recs)} questions)")
-    print("RQ1", {k: round(v, 3) if isinstance(v, float) else v for k, v in rq1(recs).items()})
+    print("RQ1 (gold coverage)", {k: round(v, 3) if isinstance(v, float) else v for k, v in rq1(recs).items()})
+    corpus = corpus_for(recs)
+    if corpus:
+        print("RQ1 (answer in context)", {k: round(v, 3) if isinstance(v, float) else v
+                                         for k, v in rq1(recs, lambda r, s: answer_in_context(r, s, corpus)).items()})
     print("RQ2", {k: round(v, 3) if isinstance(v, float) else v for k, v in rq2(recs).items()})
     print(f"{'rule':<11}{'steps':>6}{'EM':>7}{'F1':>7}  F1 95% CI")
     for name, (st, em, f, ci) in rule_table(recs).items():
