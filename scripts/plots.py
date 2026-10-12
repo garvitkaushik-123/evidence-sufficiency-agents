@@ -98,6 +98,15 @@ def tables():
                 for name, label in (("gold coverage", None), ("answer in context", lambda r, s: answer_in_context(r, s, corpus))):
                     x = rq1(runs[d, m]) if label is None else rq1(runs[d, m], label)
                     out.append(f"| {dname} | {m} | {name} | {x['precision']:.3f} | {x['recall']:.3f} | {x['f1']:.3f} | {x['premature']} | {x['over_retrieval']} | {x['n']} |")
+    out += ["# RQ2: stated probability vs answer correctness", "",
+            "AUROC of the stated probability for answer exact match, over all steps, and over steps where the answer is not an abstention "
+            "(for example 'Not enough information', matched by a keyword list, so approximate). Abstentions are wrong by construction.",
+            "", "| dataset | model | AUROC all steps | AUROC answered steps | ECE | steps | abstention-like answers |", "|---|---|---|---|---|---|---|"]
+    for d, dname in DATASETS.items():
+        for m in MODELS:
+            x = rq2(runs[d, m])
+            out.append(f"| {dname} | {m} | {x['auroc']:.3f} | {x['auroc_answered']:.3f} | {x['ece']:.3f} | {x['n']} | {x['abstained']} |")
+    out.append("")
     Path("results/rule_tables.md").write_text("\n".join(out))
 
 

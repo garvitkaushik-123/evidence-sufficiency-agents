@@ -33,6 +33,10 @@ Share of all premature stops where the gold answer text already appears in the s
 
 For the strong model this matches the manual 74% (37 of 50). The small model makes genuinely more premature stops: a larger share of its stops lack the answer in the evidence.
 
+## Second pass
+
+Every case was re-checked mechanically (12 Oct 2026). All 37 `answerable` cases have the gold answer or the model's answer text in the retrieved evidence, or are yes/no questions. The other 13 were re-read; three borderline `parametric` tags (hotpotqa-14, hotpotqa-22, musique-17) were kept because the answer string is present but the link that justifies it is not. No tag changed. This is not a human check.
+
 ## Caveats
 
 - Single tagger, single model (`gemini-3.8-flash`), 50 of 188 cases, and the taxonomy was adapted after reading the cases (`answerable` was added because it dominated).

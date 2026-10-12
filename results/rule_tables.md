@@ -74,3 +74,13 @@ Verdict SUFFICIENT vs (a) all gold paragraphs in context, (b) gold answer text i
 | MuSiQue | gemini-3.5-flash-lite | answer in context | 0.863 | 0.685 | 0.764 | 175 | 507 | 2500 |
 | MuSiQue | gemini-3.8-flash | gold coverage | 0.783 | 0.790 | 0.787 | 245 | 236 | 2500 |
 | MuSiQue | gemini-3.8-flash | answer in context | 0.946 | 0.650 | 0.770 | 61 | 577 | 2500 |
+# RQ2: stated probability vs answer correctness
+
+AUROC of the stated probability for answer exact match, over all steps, and over steps where the answer is not an abstention (for example 'Not enough information', matched by a keyword list, so approximate). Abstentions are wrong by construction.
+
+| dataset | model | AUROC all steps | AUROC answered steps | ECE | steps | abstention-like answers |
+|---|---|---|---|---|---|---|
+| HotpotQA | gemini-3.5-flash-lite | 0.654 | 0.513 | 0.340 | 2500 | 352 |
+| HotpotQA | gemini-3.8-flash | 0.660 | 0.619 | 0.296 | 2500 | 113 |
+| MuSiQue | gemini-3.5-flash-lite | 0.835 | 0.511 | 0.243 | 2497 | 1210 |
+| MuSiQue | gemini-3.8-flash | 0.717 | 0.632 | 0.253 | 2500 | 385 |

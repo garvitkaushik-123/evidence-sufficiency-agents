@@ -144,11 +144,24 @@ def ece(probs, labels, bins=10):
     return tot / len(probs)
 
 
+_ABSTAIN = re.compile(r"\b(insufficient|not enough|cannot be (determined|answered)|can't be|unknown|"
+                      r"not (provided|specified|mentioned|stated|available|found)|no (information|answer)|unclear|unanswerable)\b", re.I)
+
+
+def is_abstention(answer):
+    """Answer that says the evidence does not contain the answer. Exact match counts it wrong by construction."""
+    return bool(_ABSTAIN.search(answer or ""))
+
+
 def rq2(recs):
-    """Stated sufficiency probability vs answer exact-match, over all steps with a parsed probability."""
-    pairs = [(s["probability"], score(s["answer"], r)[0]) for r in recs for s in r["steps"] if s["probability"] is not None]
-    probs, labels = [p for p, _ in pairs], [y for _, y in pairs]
-    return {"auroc": auroc(probs, labels), "ece": ece(probs, labels), "n": len(pairs)}
+    """Stated sufficiency probability vs answer exact-match over all steps with a parsed probability.
+    auroc_answered drops abstention-like answers, which are wrong by construction and carry a low probability."""
+    rows = [(s["probability"], score(s["answer"], r)[0], is_abstention(s["answer"]))
+            for r in recs for s in r["steps"] if s["probability"] is not None]
+    probs, labels = [p for p, _, _ in rows], [y for _, y, _ in rows]
+    kept = [(p, y) for p, y, ab in rows if not ab]
+    return {"auroc": auroc(probs, labels), "auroc_answered": auroc([p for p, _ in kept], [y for _, y in kept]),
+            "ece": ece(probs, labels), "n": len(rows), "abstained": len(rows) - len(kept)}
 
 
 def report(path):

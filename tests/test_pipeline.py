@@ -110,3 +110,12 @@ def test_answer_in_context_label():
     assert answer_in_context({**r, "gold_answer": "yes"}, r["steps"][0], corpus) is None
     out = rq1([r], lambda r, s: answer_in_context(r, s, corpus))
     assert out["precision"] == 1.0 and out["recall"] == 1.0 and out["n"] == 2
+
+
+def test_abstention_filter_in_rq2():
+    from ess.evaluate import is_abstention, rq2
+    assert is_abstention("Not enough information") and is_abstention("unknown") and not is_abstention("Paris")
+    mk = lambda p, a: {"verdict": "X", "probability": p, "answer": a}
+    r = {"gold_answer": "Paris", "aliases": [], "steps": [mk(0.0, "Not enough information"), mk(1.0, "Paris"), mk(1.0, "Rome")]}
+    out = rq2([r])
+    assert out["abstained"] == 1 and out["auroc"] == 0.75 and out["auroc_answered"] == 0.5

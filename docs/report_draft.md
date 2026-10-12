@@ -1,10 +1,10 @@
 # When Is Enough Evidence Enough? Sufficiency Judgments and Stopping Rules in Multi-Step Retrieval Agents
 
-*Technical report, first draft. Numbers come from `results/` and `runs/`; `[CHECK]` marks places the author must confirm or fill in. Not a publication.*
+*Technical report, first draft. Numbers come from `results/` and `runs/`. Not a publication. Open item: a human re-tag of the error-analysis cases (Section 5).*
 
 ## Abstract
 
-A retrieval agent that searches in several steps must decide when it has seen enough. We let two Gemini models retrieve for five steps over a BM25 index and, after every step, state whether the evidence suffices, how likely that is, and their current answer. Logging every step lets us replay any stopping rule offline from one run per model. On 500 HotpotQA and 500 MuSiQue questions we ask how often "enough" is true, whether the judgement predicts a correct answer, and which rule gives the best accuracy for the retrieval spent. Stopping at the first "sufficient" verdict uses 34 to 67% fewer steps than always taking five, at an answer-F1 cost that is not significant in three of four model and dataset pairs and about 0.025 in the fourth. Model choice moves F1 by 0.07 to 0.26, far more than any rule. Against "all gold paragraphs retrieved" the verdict is right 65 to 93% of the time, but a manual read of 50 apparent premature stops found about three in four already answerable from the retrieved text, so gold coverage understates it. Stated probabilities sit near 0 and 1 and are poorly calibrated.
+A retrieval agent that searches in several steps must decide when it has seen enough. We let two Gemini models retrieve for five steps over a BM25 index and, after every step, state whether the evidence suffices, how likely that is, and their current answer. Logging every step lets us replay any stopping rule offline from one run per model. On 500 HotpotQA and 500 MuSiQue questions we ask how often "enough" is true, whether the judgement predicts a correct answer, and which rule gives the best accuracy for the retrieval spent. Stopping at the first "sufficient" verdict uses 34 to 67% fewer steps than always taking five, at an answer-F1 cost that is not significant in three of four model and dataset pairs and about 0.025 in the fourth. Model choice moves F1 by 0.07 to 0.26, far more than any rule. Against "all gold paragraphs retrieved" the verdict is right 65 to 93% of the time, but a manual read of 50 apparent premature stops found about three in four already answerable from the retrieved text, so gold coverage understates it. Stated probabilities sit near 0 and 1 and are poorly calibrated; much of their apparent power to predict correctness comes from answers that abstain, and on answered steps the small model's probability is no better than chance.
 
 ## 1. Introduction
 
@@ -19,7 +19,7 @@ Multi-hop QA datasets mark which paragraphs are needed, so "sufficient" has an o
 
 ## 2. Related work
 
-*(Use the paragraph in `docs/related_work.md`, section 3, and the table in section 2 if space allows. Cite `joren2025sufficient`, `trivedi2023ircot`, `jiang2023flare`, `asai2023selfrag`, `jeong2024adaptiverag`, `lu2025agentrewardbench`.)* [CHECK: re-read the paragraph against the papers once more.]
+*(Use the paragraph in `docs/related_work.md`, section 3, and the table in section 2 if space allows. Cite `joren2025sufficient`, `trivedi2023ircot`, `jiang2023flare`, `asai2023selfrag`, `jeong2024adaptiverag`, `lu2025agentrewardbench`. Its claims were checked against the full text of each paper.)*
 
 ## 3. Setup
 
@@ -27,7 +27,7 @@ Multi-hop QA datasets mark which paragraphs are needed, so "sufficient" has an o
 
 **Agent loop.** Up to T = 5 steps. Step 1 searches with the question. Later steps search with a query the model writes from the question and the evidence so far. BM25 (Robertson and Zaragoza, 2009) returns k = 3 paragraphs per step, excluding paragraphs already retrieved, so the context grows to 15 distinct paragraphs. After every step the model, which sees only the question and the evidence, outputs a verdict (SUFFICIENT or INSUFFICIENT), a probability that the evidence suffices, and its current answer. The agent always runs all five steps and everything is logged.
 
-**Models.** `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong), run on 11 and 12 October 2026 with temperature 0. Both are thinking models, so reruns need not be bit-identical; the committed logs are the record. [CHECK: dates of the runs.]
+**Models.** `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong), run with temperature 0, the small model on 11 October 2026 and the strong model between 11 and 12 October 2026 (India Standard Time, from the log file timestamps). Both are thinking models, so reruns need not be bit-identical; the committed logs are the record.
 
 **Stopping rules, computed offline from the logs.** Fixed-k (k = 1, 3, 5); self-judge (stop at the first SUFFICIENT verdict, else step 5); threshold (first step with probability at least tau, tau from 0.5 to 0.95); oracle (first step where all gold paragraphs are in context, else step 5).
 
@@ -70,13 +70,22 @@ Multi-hop QA datasets mark which paragraphs are needed, so "sufficient" has an o
 
 Precision depends strongly on the label. Against gold coverage the verdict is right 90 to 93% of the time on HotpotQA and 65 to 78% on MuSiQue; against answer-in-context it is right 96 to 98% and 86 to 95%. Premature stops are concentrated at step 1: of the questions where the small model said SUFFICIENT at step 1, 126 of 301 (HotpotQA) and 90 of 122 (MuSiQue) still lacked a gold paragraph; for the strong model, 72 of 246 and 33 of 64. The strong model makes fewer premature stops than the small one. Over-retrieval grows under the looser label, so the models are cautious as well as sometimes hasty. On MuSiQue the gold paragraphs are not all retrieved within five steps for 177 (strong) to 189 (small) of 500 questions, against 21 to 25 on HotpotQA, a BM25 limit that caps what any rule can reach.
 
-### 4.3 RQ2: does the judgement predict correctness? (Figure 2)
+### 4.3 RQ2: does the judgement predict correctness? (Table 3, Figure 2)
 
-The stated probability predicts answer exact match modestly: AUROC 0.65 and 0.66 on HotpotQA and 0.84 (small) and 0.72 (strong) on MuSiQue; expected calibration error is 0.24 to 0.34. The probabilities cluster at the ends: the small model says exactly 0 or 1 in 93 to 94% of judgements, the strong model in 61% (HotpotQA) and 25% (MuSiQue), with 91% and 75% within 0.1 of an extreme. The reliability diagram (`results/figures/reliability.png`) shows that stating 1 corresponds to answers that are right about 54 to 67% of the time. [CHECK: read exact values off the figure data before quoting.] The small model's higher AUROC on MuSiQue is not explained by this study; it may reflect its lower accuracy and more separable verdicts. [CHECK: either test this or drop the sentence.]
+| | AUROC, all steps | AUROC, answered steps | ECE | abstention-like answers |
+|---|---|---|---|---|
+| HotpotQA small | 0.654 | 0.513 | 0.340 | 352 of 2,500 |
+| HotpotQA strong | 0.660 | 0.619 | 0.296 | 113 of 2,500 |
+| MuSiQue small | 0.835 | 0.511 | 0.243 | 1,210 of 2,497 |
+| MuSiQue strong | 0.717 | 0.632 | 0.253 | 385 of 2,500 |
+
+*Table 3. Stated probability against answer exact match. "Answered steps" drops answers that say the evidence lacks the answer (for example "Not enough information"; a keyword match, so approximate). Figure 2: `results/figures/reliability.png`.*
+
+Over all steps the stated probability predicts correctness modestly (AUROC 0.65 to 0.84, ECE 0.24 to 0.34). Much of that signal is abstention: when a model writes an answer such as "Not enough information" it also states a low probability, and exact match counts that answer wrong by construction. Such answers are 48% of the small model's steps on MuSiQue and 14% on HotpotQA, against 15% and 5% for the strong model. On steps where the model commits to an answer, AUROC is 0.51 on both datasets for the small model, no better than chance, and 0.62 to 0.63 for the strong model. This also explains why the small model's all-steps AUROC on MuSiQue is higher than the strong model's (0.84 against 0.72, difference +0.12, 95% bootstrap interval 0.09 to 0.16): it abstains much more often. When a model states a probability of exactly 1, its answers are exactly right 61% (small) and 72% (strong) of the time on HotpotQA and 54% and 74% on MuSiQue. The probabilities also cluster at the ends: the small model says exactly 0 or 1 in 93 to 94% of judgements, the strong model in 61% (HotpotQA) and 25% (MuSiQue), with 91% and 75% within 0.1 of an extreme.
 
 ## 5. Error analysis
 
-We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human; re-tag before quoting.** [CHECK: a human re-tag of at least a dozen cases.]
+We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** As a second pass we checked every case mechanically: all 37 cases tagged answerable have the answer text (gold or the model's) in the retrieved evidence or are yes/no questions; the 13 cases tagged otherwise were re-read, and three borderline "parametric" tags were kept (the answer string is present but the link that justifies it is not). No tag changed. A string match does not prove support, so treat the counts as a first pass.
 
 | cause | HotpotQA | MuSiQue |
 |---|---|---|
@@ -100,7 +109,7 @@ In 37 of 50 cases the answer was already supported by the retrieved text; the mi
 
 ## 7. Conclusion and next steps
 
-Letting a model decide when to stop retrieving worked well here: a third to two thirds of the retrieval saved, at an accuracy cost that is mostly not distinguishable from zero, and a choice of model that matters far more than the choice of rule. Its judgement is better than gold coverage suggests but its stated probability is a coarse, poorly calibrated signal. A thesis could test a dense retriever and open-domain corpora, add a separate sufficiency judge as in Joren et al. (2025) to compare with self-judgement, train or calibrate the stopping signal, and run the same loop with open-weights models.
+Letting a model decide when to stop retrieving worked well here: a third to two thirds of the retrieval saved, at an accuracy cost that is mostly not distinguishable from zero, and a choice of model that matters far more than the choice of rule. Its judgement is better than gold coverage suggests, but the stated probability is a coarse, poorly calibrated signal: once abstentions are set aside it is only weakly informative about correctness for the strong model and uninformative for the small one. A thesis could test a dense retriever and open-domain corpora, add a separate sufficiency judge as in Joren et al. (2025) to compare with self-judgement, train or calibrate the stopping signal, and run the same loop with open-weights models.
 
 ## References
 
