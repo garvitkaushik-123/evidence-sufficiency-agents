@@ -9,7 +9,8 @@ from pathlib import Path
 
 from ess.evaluate import RULES, covered, load, score, stop_step
 
-CAUSES = """- `parametric`: answer comes from the model's own memory, not from the evidence shown
+CAUSES = """- `answerable`: the evidence shown already supports the answer; the missing gold paragraph is a bridge or descriptor page that adds nothing (gold coverage is a conservative proxy)
+- `parametric`: answer comes from the model's own memory, not from the evidence shown
 - `bridge-missed`: the first-hop evidence is there but the second-hop (bridge) paragraph is missing and the model did not notice
 - `distractor`: a retrieved non-gold paragraph was taken as the evidence
 - `partial-answer`: part of the answer is supported, a required piece is not
@@ -57,8 +58,9 @@ for d in ("hotpotqa", "musique"):
         rows.append([case, d, r["question_id"], f"{em:.0f}", "", ""])
 Path("results/error_analysis").mkdir(parents=True, exist_ok=True)
 Path("results/error_analysis/cases.md").write_text("\n".join(out))
-with open("results/error_analysis/tags.csv", "w", newline="") as f:
-    w = csv.writer(f)
-    w.writerow(["case", "dataset", "question_id", "answer_correct_em", "cause", "notes"])
-    w.writerows(rows)
+if not Path("results/error_analysis/tags.csv").exists():  # never overwrite finished tags
+    with open("results/error_analysis/tags.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["case", "dataset", "question_id", "answer_correct_em", "cause", "notes"])
+        w.writerows(rows)
 print(f"{len(rows)} cases -> results/error_analysis/cases.md, tags.csv")

@@ -1,51 +1,51 @@
 case,dataset,question_id,answer_correct_em,cause,notes
-hotpotqa-01,hotpotqa,5ac160605542994ab5c67d02,1,,
-hotpotqa-02,hotpotqa,5adc094a55429947ff1738c0,1,,
-hotpotqa-03,hotpotqa,5a7736bc554299373536021b,0,,
-hotpotqa-04,hotpotqa,5ab3c48755429969a97a81b8,1,,
-hotpotqa-05,hotpotqa,5ae16bce5542997b2ef7d1e8,0,,
-hotpotqa-06,hotpotqa,5adff34555429942ec259baa,0,,
-hotpotqa-07,hotpotqa,5ac2610f55429951e9e68593,0,,
-hotpotqa-08,hotpotqa,5ab78edc5542995dae37e95c,0,,
-hotpotqa-09,hotpotqa,5adeda67554299728e26c7db,1,,
-hotpotqa-10,hotpotqa,5abcf70b55429959677d6b7e,1,,
-hotpotqa-11,hotpotqa,5a87100655429960ec39b71e,1,,
-hotpotqa-12,hotpotqa,5ae13e205542997b2ef7d157,1,,
-hotpotqa-13,hotpotqa,5a7ecae055429934daa2fc6a,1,,
-hotpotqa-14,hotpotqa,5ab5e9865542992aa134a3db,1,,
-hotpotqa-15,hotpotqa,5ae3b1ba5542992f92d82343,1,,
-hotpotqa-16,hotpotqa,5a7b413a5542992d025e67c4,0,,
-hotpotqa-17,hotpotqa,5a90503755429916514e7470,1,,
-hotpotqa-18,hotpotqa,5a7fb1e55542995d8a8ddef7,1,,
-hotpotqa-19,hotpotqa,5ab7b3cc55429928e1fe3893,1,,
-hotpotqa-20,hotpotqa,5ae1f79f5542997283cd2302,1,,
-hotpotqa-21,hotpotqa,5a7a030c5542996a35c17077,1,,
-hotpotqa-22,hotpotqa,5add7a335542992200553b37,1,,
-hotpotqa-23,hotpotqa,5adccdd55542992c1e3a2408,1,,
-hotpotqa-24,hotpotqa,5abae3205542996cc5e49edc,0,,
-hotpotqa-25,hotpotqa,5a8268215542995ce29dccfb,1,,
-musique-01,musique,3hop1__465684_160545_34754,0,,
-musique-02,musique,4hop2__103790_14670_8987_8529,0,,
-musique-03,musique,3hop1__536452_15840_36014,0,,
-musique-04,musique,2hop__24661_66233,1,,
-musique-05,musique,2hop__771477_149987,1,,
-musique-06,musique,3hop1__857_846_7794,1,,
-musique-07,musique,3hop1__836699_15840_36014,0,,
-musique-08,musique,3hop1__516535_834494_33939,1,,
-musique-09,musique,3hop1__139862_2053_52946,1,,
-musique-10,musique,3hop1__831162_831637_91775,1,,
-musique-11,musique,3hop1__157177_625046_613900,0,,
-musique-12,musique,3hop2__25177_19506_23299,0,,
-musique-13,musique,2hop__668407_683671,0,,
-musique-14,musique,3hop1__857_846_7701,1,,
-musique-15,musique,2hop__417937_158105,0,,
-musique-16,musique,2hop__88149_807969,0,,
-musique-17,musique,4hop1__525129_315334_131926_13165,0,,
-musique-18,musique,2hop__3131_3300,0,,
-musique-19,musique,3hop2__90098_76623_10557,1,,
-musique-20,musique,2hop__75169_92673,0,,
-musique-21,musique,3hop1__9285_5188_23307,0,,
-musique-22,musique,3hop2__76623_90098_10557,1,,
-musique-23,musique,2hop__423972_540249,0,,
-musique-24,musique,3hop1__140786_2053_52946,1,,
-musique-25,musique,4hop1__391525_49925_13759_736921,0,,
+hotpotqa-01,hotpotqa,5ac160605542994ab5c67d02,1,answerable,'first Native American gold medalist' alone fixes Jim Thorpe; Eagle Feather (the coach hop) only confirms
+hotpotqa-02,hotpotqa,5adc094a55429947ff1738c0,1,answerable,"Frank Beard paragraph says drummer of ZZ Top, formerly American Blues; American Blues page redundant"
+hotpotqa-03,hotpotqa,5a7736bc554299373536021b,0,answerable,born 4 March 1678 identifies Vivaldi; Italian-libretto clue is in the missing page; EM miss is 'Antonio Vivaldi' vs 'Antonio Lucio Vivaldi'
+hotpotqa-04,hotpotqa,5ab3c48755429969a97a81b8,1,answerable,Argentine cuisine paragraph repeats the question's wording
+hotpotqa-05,hotpotqa,5ae16bce5542997b2ef7d1e8,0,partial-answer,"evidence gives the year 2018 only; exact election date is in the missing page; answer '2018' vs 'November 6, 2018'"
+hotpotqa-06,hotpotqa,5adff34555429942ec259baa,0,answerable,"footballer paragraph supports Bury; EM miss is 'Bury' vs 'Bury, Greater Manchester, England'"
+hotpotqa-07,hotpotqa,5ac2610f55429951e9e68593,0,answerable,Mabula paragraph names the owner; EM miss is 'Vijay Mallya' vs 'Vijay Vittal Mallya'
+hotpotqa-08,hotpotqa,5ab78edc5542995dae37e95c,0,partial-answer,answer is the state 'Kansas'; the school's city (Olathe) needs the missing school page
+hotpotqa-09,hotpotqa,5adeda67554299728e26c7db,1,parametric,evidence never states Costus's family; 'no' rests on the model knowing Costus is not Apiaceae
+hotpotqa-10,hotpotqa,5abcf70b55429959677d6b7e,1,answerable,'recorded by Diamond Rio' is in the song paragraph; band descriptors are in the missing page
+hotpotqa-11,hotpotqa,5a87100655429960ec39b71e,1,answerable,paragraph states the letter was addressed to Salman Rushdie; descriptors are in the missing page
+hotpotqa-12,hotpotqa,5ae13e205542997b2ef7d157,1,answerable,"paragraph says Pope Field, Fort Bragg; 'largest installation' is in the missing page"
+hotpotqa-13,hotpotqa,5a7ecae055429934daa2fc6a,1,answerable,Sarraute is a writer; 'first novel by Anchee Min' implies Min writes; full Min page not needed
+hotpotqa-14,hotpotqa,5ab5e9865542992aa134a3db,1,parametric,only the Mount Ida half is shown; that Rhea is also Greek mythology comes from memory
+hotpotqa-15,hotpotqa,5ae3b1ba5542992f92d82343,1,answerable,Embiid paragraph states Kansas and third overall pick; the 2015-16 season page is redundant
+hotpotqa-16,hotpotqa,5a7b413a5542992d025e67c4,0,answerable,SBG Ireland is an MMA academy run by Kavanagh; EM miss is 'Mixed martial arts' vs 'martial arts'
+hotpotqa-17,hotpotqa,5a90503755429916514e7470,1,answerable,Meyer paragraph says Painter in Miniatures to Queen Charlotte; the Charlotte page only names the queen
+hotpotqa-18,hotpotqa,5a7fb1e55542995d8a8ddef7,1,answerable,Pray the Devil premiered 2008; Grizzly Man soundtrack paragraph implies the film is 2005 or earlier
+hotpotqa-19,hotpotqa,5ab7b3cc55429928e1fe3893,1,answerable,"Protea endemic to South Africa, Microcachrys endemic to western Tasmania, both shown; Protea genus page redundant"
+hotpotqa-20,hotpotqa,5ae1f79f5542997283cd2302,1,answerable,song paragraph states the album Love Letter
+hotpotqa-21,hotpotqa,5a7a030c5542996a35c17077,1,answerable,Central Avenue paragraph says it is called State Street in Schenectady County; J.B. Scott's page only locates the club
+hotpotqa-22,hotpotqa,5add7a335542992200553b37,1,parametric,Amesiella is named for Oakes Ames (shown); that Cucurbita is not named for a person is not shown
+hotpotqa-23,hotpotqa,5adccdd55542992c1e3a2408,1,answerable,Waimea means reddish water (shown) and the surfer paragraph names the 25-foot waves
+hotpotqa-24,hotpotqa,5abae3205542996cc5e49edc,0,answerable,novel paragraph says Ishiguro won the Booker Prize in 1989; EM miss is 'Booker Prize' vs 'Man Booker Prize for Fiction'
+hotpotqa-25,hotpotqa,5a8268215542995ce29dccfb,1,answerable,a retrieved MLS-related paragraph states 'highest level in both the United States and Canada'; the MLS page itself is redundant
+musique-01,musique,3hop1__465684_160545_34754,0,answerable,Pacific War paragraph (shown) gives the US view on Thailand; the Thailand hop is implied by Bodindecha page; EM miss is 'Japanese blackmail' vs 'blackmail'
+musique-02,musique,4hop2__103790_14670_8987_8529,0,answerable,Slavs and Tito paragraphs (shown) give 1943-1992 for Yugoslavia; US Army page only maps the branch; answer was over-long
+musique-03,musique,3hop1__536452_15840_36014,0,answerable,SNES paragraph shown states the limit of five games per year; platform hop is trivial; EM miss is verbose answer
+musique-04,musique,2hop__24661_66233,1,answerable,2018-19 NHL season paragraph states October 3; Hurricanes in NHL shown
+musique-05,musique,2hop__771477_149987,1,parametric,Epigoni page not shown; 'Greek mythology' is not in the evidence and comes from the model
+musique-06,musique,3hop1__857_846_7794,1,answerable,Nanjing 2010 population 8.005 million shown; Karmapa-in-Nanjing shown in the Ming paragraph
+musique-07,musique,3hop1__836699_15840_36014,0,answerable,Nightshade is NES (shown) and the five-games limit is shown; EM miss is verbose answer
+musique-08,musique,3hop1__516535_834494_33939,1,answerable,"Allen is in Pima County and Tucson 1900 population 7,531 are both shown"
+musique-09,musique,3hop1__139862_2053_52946,1,answerable,"CBS premiere date February 7, 2018 is in the shown Celebrity Big Brother paragraphs"
+musique-10,musique,3hop1__831162_831637_91775,1,answerable,"USS Dour is Navy and the Navy SEAL paragraph states Sea, Air, and Land"
+musique-11,musique,3hop1__157177_625046_613900,0,ambiguous,"gold chain ends at Minneapolis, Kansas (Ottawa County), which is not on the Mississippi; model's Ramsey County is a defensible reading"
+musique-12,musique,3hop2__25177_19506_23299,0,answerable,Molotov-Ribbentrop paragraph says the region was returned to Poland; EM 'Poland' vs 'Polish state'
+musique-13,musique,2hop__668407_683671,0,distractor,retrieved Wang Shen'ai page (wife of Emperor Xiaowu) taken as Empress Wang; the Yang Pu pages were never retrieved
+musique-14,musique,3hop1__857_846_7701,1,answerable,Nanjing paragraph states capital as early as the Jin dynasty
+musique-15,musique,2hop__417937_158105,0,bridge-missed,needs the Windows 98 hop about what Gates played up; model answered from the book description
+musique-16,musique,2hop__88149_807969,0,distractor,"Premier League paragraph is about Shearer's career record; question is single-season, answer is Salah/Egypt"
+musique-17,musique,4hop1__525129_315334_131926_13165,0,parametric,Minneapolis-on-the-Mississippi is not shown; the Treaty of Paris link comes from memory
+musique-18,musique,2hop__3131_3300,0,answerable,season three runner-up is stated in the shown paragraph; EM miss is 'Season 3' vs 'season three'
+musique-19,musique,3hop2__90098_76623_10557,1,answerable,Middle Ages paragraph says the language was later called Medieval Latin
+musique-20,musique,2hop__75169_92673,0,ambiguous,gold answer 'latitude 90 degrees North' does not answer 'where is the starting meridian'; model's Greenwich is reasonable
+musique-21,musique,3hop1__9285_5188_23307,0,answerable,Molotov-Ribbentrop paragraph says main Tripartite negotiations started in mid-June; EM 'June' vs 'mid-June'
+musique-22,musique,3hop2__76623_90098_10557,1,answerable,same evidence as musique-19; Medieval Latin stated in the Middle Ages paragraph
+musique-23,musique,2hop__423972_540249,0,ambiguous,Nannina had several siblings; Lorenzo is as valid as the gold Giuliano
+musique-24,musique,3hop1__140786_2053_52946,1,answerable,premiere date on CBS is in the shown Celebrity Big Brother paragraph
+musique-25,musique,4hop1__391525_49925_13759_736921,0,answerable,Luther's Marian sermon and Wittenberg district (Saxony-Anhalt) are both shown; Reformation page redundant

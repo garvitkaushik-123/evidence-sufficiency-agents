@@ -3,6 +3,7 @@
 Model `gemini-3.8-flash`. Each case: the agent said SUFFICIENT while at least one gold paragraph was not yet retrieved. Read the evidence, decide why it stopped, and write one cause per case in `tags.csv`.
 
 Causes:
+- `answerable`: the evidence shown already supports the answer; the missing gold paragraph is a bridge or descriptor page that adds nothing (gold coverage is a conservative proxy)
 - `parametric`: answer comes from the model's own memory, not from the evidence shown
 - `bridge-missed`: the first-hop evidence is there but the second-hop (bridge) paragraph is missing and the model did not notice
 - `distractor`: a retrieved non-gold paragraph was taken as the evidence
