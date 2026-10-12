@@ -15,6 +15,8 @@ ap.add_argument("--model", required=True, help="exact model version string, e.g.
 ap.add_argument("--pilot", type=int, default=None)
 ap.add_argument("--T", type=int, default=5)
 ap.add_argument("--k", type=int, default=3)
+ap.add_argument("--retriever", choices=["bm25", "dense"], default="bm25")
+ap.add_argument("--embed-model", default="gemini-embedding-2")
 ap.add_argument("--out", default=None)
 a = ap.parse_args()
 
@@ -23,9 +25,16 @@ corpus = data.build_corpus(qs)  # corpus is pooled from ALL sampled questions, e
 if a.pilot:
     qs = qs[:a.pilot]
 llm = GeminiLLM(a.model)
-out = a.out or f"runs/{Path(a.questions).stem}__{a.model}{'__pilot' if a.pilot else ''}.jsonl"
+dense = a.retriever == "dense"
+out = a.out or f"runs/{Path(a.questions).stem}__{a.model}{'__dense' if dense else ''}{'__pilot' if a.pilot else ''}.jsonl"
+if dense:
+    from ess.dense import DenseRetriever, GeminiEmbedder
+    retriever = DenseRetriever(corpus, GeminiEmbedder(a.embed_model), cache=f"raw/emb/{Path(a.questions).stem.split('_n')[0]}__{a.embed_model}.npz")
+    retriever_name = f"dense-{a.embed_model}"
+else:
+    retriever, retriever_name = BM25(corpus), "bm25"
 Path(out).parent.mkdir(exist_ok=True)
-run_all(qs, llm, BM25(corpus), out, T=a.T, k=a.k, run_id=Path(out).stem)
+run_all(qs, llm, retriever, out, T=a.T, k=a.k, run_id=Path(out).stem, retriever_name=retriever_name)
 print("usage:", llm.usage)
 n, problems = check_log(out, a.T)
 print(f"{n} questions logged, {len(problems)} problems")

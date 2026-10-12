@@ -4,13 +4,15 @@ PY = .venv/bin/python
 -include .env
 export
 
-.PHONY: all setup data run eval report test
+DENSE_MODEL ?= gemini-3.5-flash-lite
+
+.PHONY: all setup data run dense eval report test
 
 all: setup data run eval
 
 setup:
 	python3 -m venv .venv
-	.venv/bin/pip install -q -e ".[gemini,data,plots,dev]"
+	.venv/bin/pip install -q -e ".[gemini,data,plots,dense,dev]"
 
 data:
 	$(PY) scripts/download.py
@@ -18,6 +20,9 @@ data:
 
 run:
 	for d in hotpotqa musique; do $(PY) scripts/run_agent.py --questions raw/$${d}_n$(N)_seed0.jsonl --model $(MODEL) || exit 1; done
+
+dense:  # robustness check: same loop with a dense retriever (gemini-embedding-2), small model
+	for d in hotpotqa musique; do $(PY) scripts/run_agent.py --questions raw/$${d}_n500_seed0.jsonl --model $(DENSE_MODEL) --retriever dense || exit 1; done
 
 eval:
 	$(PY) scripts/evaluate.py runs/*_n$(N)_seed0__$(MODEL).jsonl

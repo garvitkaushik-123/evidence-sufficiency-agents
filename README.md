@@ -14,9 +14,10 @@ Models: `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong). All num
 - **The model matters far more than the stopping rule.** Strong minus small F1 is +0.07 to +0.26 for every rule on both datasets (all significant).
 - **How often is "enough" true?** Against "all gold paragraphs retrieved" the verdict has precision 0.90 to 0.93 on HotpotQA and 0.65 to 0.78 on MuSiQue. Against "the gold answer text is in the retrieved evidence" (the ground-truth-in-context heuristic that Joren et al., ICLR 2025, found reasonable but imperfect against human labels) precision is 0.96 to 0.98 and 0.86 to 0.95. A manual read of 50 premature stops (`results/error_analysis/`) found about 7 in 10 already answerable from what was retrieved, so gold coverage understates the verdict's precision. The truth lies between the two labels.
 - **Stated probabilities are close to binary**, so thresholds barely matter and calibration is poor (ECE 0.24 to 0.34). AUROC against answer exact match is 0.65 to 0.84 over all steps, but much of it is abstentions ("Not enough information" is wrong by construction and carries a low probability); on steps where the model commits to an answer it is 0.51 for the small model and 0.62 to 0.63 for the strong one. The small model says exactly 0 or 1 in 93 to 94% of judgements; the strong model in 61% (HotpotQA) and 25% (MuSiQue), but 91% and 75% of its probabilities lie within 0.1 of 0 or 1. Thresholds of 0.7 and 0.8 match self-judge to within 0.001 F1 in all four cases.
+- **The pattern survives a dense retriever (small model only).** With `gemini-embedding-2` the gold paragraphs are in context at step 1 for 89% (HotpotQA) and 30% (MuSiQue) of questions, against 37% and 7% with BM25 (top-3, question as query). Accuracy rises (F1 at 5 steps 0.743 and 0.521 against 0.730 and 0.455) and self-judge saves more: 1.24 and 2.39 steps (75% and 52% fewer) at F1 0.768 and 0.522, which is not worse than 5 fixed steps (+0.025, significant, on HotpotQA; +0.000 on MuSiQue). The oracle still adds nothing, and on answered steps the stated probability is again no better than chance (AUROC 0.51). Details in `results/` (`results/retrieval_check.md` for retrieval alone).
 - **More steps help on MuSiQue, not on HotpotQA.** 3 vs 5 fixed steps: no difference on HotpotQA, -0.04 F1 on MuSiQue. Even oracle stopping adds at most 0.02 F1 over self-judge.
 
-Limits: two Gemini models, 500 questions per dataset, pooled corpus easier than open-domain search, the error analysis was tagged by an LLM and needs a human check. The logs in `runs/` are the full per-step records, so every number can be recomputed without an API key: `make setup data eval report` (the `data` step only downloads the public datasets; it is needed for the answer-in-context label).
+Limits: two Gemini models (the dense retriever only with the small one), 500 questions per dataset, pooled corpus easier than open-domain search, the error analysis was tagged by an LLM and needs a human check. The logs in `runs/` are the full per-step records, so every number can be recomputed without an API key: `make setup data eval report` (the `data` step only downloads the public datasets; it is needed for the answer-in-context label).
 
 ## Reproduce
 
@@ -26,7 +27,7 @@ make all                  # setup, download data, sample, run both datasets, eva
 ```
 
 `make all` runs `gemini-3.8-flash` on 500 HotpotQA + 500 MuSiQue questions. Override with `make run eval MODEL=<exact-model-id>`.
-Individual steps: `make setup`, `make data`, `make run`, `make eval`, `make report` (paired tests + figures into `results/`), `make test`. Runs are resumable: re-running skips questions already in the log.
+Individual steps: `make setup`, `make data`, `make run`, `make eval`, `make dense` (dense-retriever robustness run, small model), `make report` (paired tests + figures into `results/`), `make test`. Runs are resumable: re-running skips questions already in the log.
 
 **Cost and time (measured on `gemini-3.8-flash`, paid tier):** about 1,000 questions x 9 LLM calls, roughly $20 and 10+ hours sequentially. `gemini-3.5-flash-lite` costs a fraction of that. Thinking tokens are billed as output and dominate the bill. Do a pilot first: `python scripts/run_agent.py --questions raw/hotpotqa_n500_seed0.jsonl --model <id> --pilot 50` (also runs the exit check and prints token usage).
 
@@ -41,7 +42,7 @@ Individual steps: `make setup`, `make data`, `make run`, `make eval`, `make repo
 
 Question-level: `run, model, retriever, question_id, dataset, question, gold_answer, aliases, gold_pids, T, k`.
 Per step: `step, query, retrieved_pids, context_pids (cumulative), verdict, probability, answer, raw_judge, parse_ok`.
-Gold coverage at step t = `gold_pids ⊆ context_pids`. The four full-run logs are committed (`runs/<dataset>_n500_seed0__<model>.jsonl`, about 5 MB); pilot logs and run stdout are not. They contain text from the public HotpotQA (CC BY-SA 4.0) and MuSiQue datasets; see their pages for licences.
+Gold coverage at step t = `gold_pids ⊆ context_pids`. The six full-run logs are committed (`runs/<dataset>_n500_seed0__<model>[__dense].jsonl`, about 8 MB); pilot logs and run stdout are not. They contain text from the public HotpotQA (CC BY-SA 4.0) and MuSiQue datasets; see their pages for licences.
 
 ## Evaluation (`scripts/evaluate.py`)
 

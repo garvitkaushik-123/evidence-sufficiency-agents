@@ -4,7 +4,7 @@
 
 ## Abstract
 
-A retrieval agent that searches in several steps must decide when it has seen enough. We let two Gemini models retrieve for five steps over a BM25 index and, after every step, state whether the evidence suffices, how likely that is, and their current answer. Logging every step lets us replay any stopping rule offline from one run per model. On 500 HotpotQA and 500 MuSiQue questions we ask how often "enough" is true, whether the judgement predicts a correct answer, and which rule gives the best accuracy for the retrieval spent. Stopping at the first "sufficient" verdict uses 34 to 67% fewer steps than always taking five, at an answer-F1 cost that is not significant in three of four model and dataset pairs and about 0.025 in the fourth. Model choice moves F1 by 0.07 to 0.26, far more than any rule. Against "all gold paragraphs retrieved" the verdict is right 65 to 93% of the time, but a read of 50 apparent premature stops found about 7 in 10 already answerable from the retrieved text, so gold coverage understates it. Stated probabilities sit near 0 and 1 and are poorly calibrated; much of their apparent power to predict correctness comes from answers that abstain, and on answered steps the small model's probability is no better than chance.
+A retrieval agent that searches in several steps must decide when it has seen enough. We let two Gemini models retrieve for five steps over a BM25 index and, after every step, state whether the evidence suffices, how likely that is, and their current answer. Logging every step lets us replay any stopping rule offline from one run per model. On 500 HotpotQA and 500 MuSiQue questions we ask how often "enough" is true, whether the judgement predicts a correct answer, and which rule gives the best accuracy for the retrieval spent. Stopping at the first "sufficient" verdict uses 34 to 67% fewer steps than always taking five, at an answer-F1 cost that is not significant in three of four model and dataset pairs and about 0.025 in the fourth. Model choice moves F1 by 0.07 to 0.26, far more than any rule. Against "all gold paragraphs retrieved" the verdict is right 65 to 93% of the time, but a read of 50 apparent premature stops found about 7 in 10 already answerable from the retrieved text, so gold coverage understates it. A dense retriever (small model only) gives the same picture with larger savings. Stated probabilities sit near 0 and 1 and are poorly calibrated; much of their apparent power to predict correctness comes from answers that abstain, and on answered steps the small model's probability is no better than chance.
 
 ## 1. Introduction
 
@@ -26,6 +26,8 @@ Multi-hop QA datasets mark which paragraphs are needed, so "sufficient" has an o
 **Data.** HotpotQA distractor dev (Yang et al., 2018) and MuSiQue-Ans dev (Trivedi et al., 2022); 500 questions each, sampled with a fixed seed (IDs in `data/ids/`). HotpotQA was taken from the HuggingFace mirror and converted to the original format. Each dataset's corpus pools and deduplicates the paragraphs of its 500 sampled questions: 4,945 paragraphs for HotpotQA and 7,017 for MuSiQue.
 
 **Agent loop.** Up to T = 5 steps. Step 1 searches with the question. Later steps search with a query the model writes from the question and the evidence so far. BM25 (Robertson and Zaragoza, 2009) returns k = 3 paragraphs per step, excluding paragraphs already retrieved, so the context grows to 15 distinct paragraphs. After every step the model, which sees only the question and the evidence, outputs a verdict (SUFFICIENT or INSUFFICIENT), a probability that the evidence suffices, and its current answer. The agent always runs all five steps and everything is logged.
+
+**Dense retriever (robustness check).** For the small model only, the loop was rerun with `gemini-embedding-2` (768 dimensions, cosine, query-task and document-task embeddings) in place of BM25; nothing else changed, and the same rules and metrics were applied.
 
 **Models.** `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong), run with temperature 0, the small model on 11 October 2026 and the strong model between 11 and 12 October 2026 (India Standard Time, from the log file timestamps). Both are thinking models, so reruns need not be bit-identical; the committed logs are the record.
 
@@ -83,6 +85,25 @@ Precision depends strongly on the label. Against gold coverage the verdict is ri
 
 Over all steps the stated probability predicts correctness modestly (AUROC 0.65 to 0.84, ECE 0.24 to 0.34). Much of that signal is abstention: when a model writes an answer such as "Not enough information" it also states a low probability, and exact match counts that answer wrong by construction. Such answers are 48% of the small model's steps on MuSiQue and 14% on HotpotQA, against 15% and 5% for the strong model. On steps where the model commits to an answer, AUROC is 0.51 on both datasets for the small model, no better than chance, and 0.62 to 0.63 for the strong model. This also explains why the small model's all-steps AUROC on MuSiQue is higher than the strong model's (0.84 against 0.72, difference +0.12, 95% bootstrap interval 0.09 to 0.16): it abstains much more often. When a model states a probability of exactly 1, its answers are exactly right 61% (small) and 72% (strong) of the time on HotpotQA and 54% and 74% on MuSiQue. The probabilities also cluster at the ends: the small model says exactly 0 or 1 in 93 to 94% of judgements, the strong model in 61% (HotpotQA) and 25% (MuSiQue), with 91% and 75% within 0.1 of an extreme.
 
+### 4.4 Robustness to the retriever (small model, Table 4)
+
+With the question as the query, all gold paragraphs are in the top 3 for 89% of HotpotQA and 30% of MuSiQue questions under dense retrieval, against 37% and 7% under BM25 (`results/retrieval_check.md`). Within the agent loop gold is in context at step 1 for 443 and 149 of 500 questions, against 183 and 36, and is never reached in five steps for 4 and 117, against 21 and 189.
+
+| | HotpotQA BM25 | HotpotQA dense | MuSiQue BM25 | MuSiQue dense |
+|---|---|---|---|---|
+| fixed-1: F1 | 0.440 | 0.717 | 0.145 | 0.331 |
+| fixed-3: F1 | 0.736 | 0.757 | 0.413 | 0.496 |
+| fixed-5: F1 | 0.730 | 0.743 | 0.455 | 0.521 |
+| self-judge: steps, F1 | 1.63, 0.705 | 1.24, 0.768 | 2.94, 0.452 | 2.39, 0.522 |
+| oracle: steps, F1 | 1.93, 0.725 | 1.18, 0.748 | 3.48, 0.440 | 2.74, 0.514 |
+| verdict precision vs gold coverage | 0.900 | 0.975 | 0.646 | 0.725 |
+| verdict precision vs answer in context | 0.958 | 0.987 | 0.863 | 0.920 |
+| AUROC all steps, answered steps | 0.654, 0.513 | 0.586, 0.514 | 0.835, 0.511 | 0.776, 0.506 |
+
+*Table 4. Small model, BM25 against dense retriever, 500 questions per dataset.*
+
+The conclusions hold. Dense retrieval raises F1 under every rule (paired differences on MuSiQue +0.066 to +0.186, all significant; on HotpotQA +0.277 at one step and +0.063 for self-judge, significant, but +0.013 at five steps and +0.023 for the oracle, not). Self-judge now saves more of the retrieval, 75% on HotpotQA and 52% on MuSiQue, and compared with five fixed steps its F1 difference is +0.025 on HotpotQA (95% interval 0.006 to 0.045, significant) and +0.000 on MuSiQue ([-0.028, +0.028]). The oracle still adds nothing: it is 0.020 worse than self-judge on HotpotQA (significant) and 0.008 worse on MuSiQue (not significant). The oracle stops when the gold paragraphs are complete, which is not the same as the answer having been found. The probability is again uninformative on answered steps (AUROC 0.51). Only the small model was rerun, so we cannot say whether the strong model's gains from self-judging also carry over.
+
 ## 5. Error analysis
 
 We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** It was done in two passes by the same model. The second used a stricter written rule (every link in the chain must be stated in the shown text, each answerable tag carries its supporting sentence) and changed 3 of 50 tags; this measures consistency of one annotator, not agreement between annotators. A string match does not prove support, so treat the counts as a first pass.
@@ -100,7 +121,7 @@ In 36 of 50 cases the answer was already supported by the retrieved text; the mi
 
 ## 6. Limitations
 
-- Two Gemini models from one family, 500 questions per dataset, one retriever (BM25); a dense retriever is untested.
+- Two Gemini models from one family and 500 questions per dataset. BM25 is the main retriever; a dense retriever was run for the small model only.
 - The pooled corpus is much smaller than open-domain search, so retrieval is easier than in practice.
 - Gold coverage is a proxy for sufficiency, and the answer-in-context label is lenient (a string match can be coincidental). The truth lies between them.
 - The verdict is the answering model's own, produced with a fixed prompt; other prompts could change it.
@@ -109,7 +130,7 @@ In 36 of 50 cases the answer was already supported by the retrieved text; the mi
 
 ## 7. Conclusion and next steps
 
-Letting a model decide when to stop retrieving worked well here: a third to two thirds of the retrieval saved, at an accuracy cost that is mostly not distinguishable from zero, and a choice of model that matters far more than the choice of rule. Its judgement is better than gold coverage suggests, but the stated probability is a coarse, poorly calibrated signal: once abstentions are set aside it is only weakly informative about correctness for the strong model and uninformative for the small one. A thesis could test a dense retriever and open-domain corpora, add a separate sufficiency judge as in Joren et al. (2025) to compare with self-judgement, train or calibrate the stopping signal, and run the same loop with open-weights models.
+Letting a model decide when to stop retrieving worked well here: a third to two thirds of the retrieval saved, at an accuracy cost that is mostly not distinguishable from zero, and a choice of model that matters far more than the choice of rule, and the same pattern with a dense retriever. Its judgement is better than gold coverage suggests, but the stated probability is a coarse, poorly calibrated signal: once abstentions are set aside it is only weakly informative about correctness for the strong model and uninformative for the small one. A thesis could test open-domain corpora and the strong model with the dense retriever, add a separate sufficiency judge as in Joren et al. (2025) to compare with self-judgement, train or calibrate the stopping signal, and run the same loop with open-weights models.
 
 ## References
 

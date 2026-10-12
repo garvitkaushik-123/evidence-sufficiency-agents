@@ -119,3 +119,23 @@ def test_abstention_filter_in_rq2():
     r = {"gold_answer": "Paris", "aliases": [], "steps": [mk(0.0, "Not enough information"), mk(1.0, "Paris"), mk(1.0, "Rome")]}
     out = rq2([r])
     assert out["abstained"] == 1 and out["auroc"] == 0.75 and out["auroc_answered"] == 0.5
+
+
+def test_dense_retriever_search_exclude_and_cache(tmp_path):
+    import numpy as np
+    from ess.dense import DenseRetriever
+    paras = [{"pid": f"p{i}", "title": f"T{i}", "text": f"text {i}"} for i in range(5)]
+    vecs = np.eye(5, dtype=np.float32)
+
+    def embed(texts, task):  # fake: paragraph i gets axis i, a query "q<i>" points at axis i
+        calls.append(task)
+        if task == "RETRIEVAL_DOCUMENT":
+            return vecs
+        return np.stack([vecs[int(t[1:])] + 0.1 * vecs[(int(t[1:]) + 1) % 5] for t in texts])
+    calls = []
+    cache = tmp_path / "e.npz"
+    r = DenseRetriever(paras, embed, cache=cache)
+    assert [p["pid"] for p in r.search("q2", k=2)] == ["p2", "p3"]
+    assert [p["pid"] for p in r.search("q2", k=2, exclude={"p2"})] == ["p3", "p0"]
+    DenseRetriever(paras, embed, cache=cache)  # second build reads the cache, no new document embedding
+    assert calls.count("RETRIEVAL_DOCUMENT") == 1

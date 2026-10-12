@@ -18,12 +18,22 @@ head = "| comparison (A - B) | F1 diff | 95% CI | CI excludes 0 | steps diff |\n
 out = ["# Paired bootstrap tests", "", "F1 difference A - B over the same 500 questions (2,000 resamples of questions). "
        "Compare rules within a model, then models within a rule.", ""]
 runs = {(d, m): load(f"runs/{d}_n500_seed0__{m}.jsonl") for d in DATASETS for m in MODELS}
+DENSE = MODELS[0] + "__dense"  # small model with the dense retriever
+for d in DATASETS:
+    runs[d, DENSE] = load(f"runs/{d}_n500_seed0__{DENSE}.jsonl")
 for d in DATASETS:
     for m in MODELS:
         out += [f"## {d}, {m}: rule vs rule", "", head]
         for ra, rb in RULE_PAIRS:
             out.append(row(f"{ra} - {rb}", per_question(runs[d, m], RULES[ra]), per_question(runs[d, m], RULES[rb])))
         out.append("")
+    out += [f"## {d}, {DENSE}: rule vs rule", "", head]
+    for ra, rb in RULE_PAIRS:
+        out.append(row(f"{ra} - {rb}", per_question(runs[d, DENSE], RULES[ra]), per_question(runs[d, DENSE], RULES[rb])))
+    out += ["", f"## {d}: dense - BM25 retriever ({MODELS[0]}), same rule", "", head]
+    for rule in ("fixed-1", "fixed-3", "fixed-5", "self-judge", "oracle"):
+        out.append(row(rule, per_question(runs[d, DENSE], RULES[rule]), per_question(runs[d, MODELS[0]], RULES[rule])))
+    out.append("")
     out += [f"## {d}: {MODELS[1]} - {MODELS[0]}, same rule", "", head]
     for rule in ("fixed-1", "fixed-3", "fixed-5", "self-judge", "oracle"):
         out.append(row(rule, per_question(runs[d, MODELS[1]], RULES[rule]), per_question(runs[d, MODELS[0]], RULES[rule])))

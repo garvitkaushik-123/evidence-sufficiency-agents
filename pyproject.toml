@@ -9,6 +9,7 @@ dependencies = []
 gemini = ["google-genai"]
 data = ["pyarrow"]
 plots = ["matplotlib"]
+dense = ["numpy"]
 dev = ["pytest"]
 
 [tool.setuptools.packages.find]

@@ -18,6 +18,9 @@ plt.rcParams.update({"figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "sa
                      "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8, "axes.axisbelow": True,
                      "font.size": 10})
 runs = {(d, m): load(f"runs/{d}_n500_seed0__{m}.jsonl") for d in DATASETS for m in MODELS}
+DENSE = "gemini-3.5-flash-lite__dense"  # small model with the dense retriever
+for d in DATASETS:
+    runs[d, DENSE] = load(f"runs/{d}_n500_seed0__{DENSE}.jsonl")
 
 
 def accuracy_vs_steps():
@@ -34,15 +37,23 @@ def accuracy_vs_steps():
             st, _, f, _ = tab["oracle"]
             ax.plot(st, f, "D", ms=8, mfc=SURFACE, mec=col, mew=2, zorder=3)
             ax.annotate(m.replace("gemini-", ""), (5, f1s[-1]), xytext=(6, 0), textcoords="offset points", color=INK, va="center", fontsize=9)
+        col, tab = MODELS["gemini-3.5-flash-lite"], rule_table(runs[d, DENSE])
+        f1s = [sum(f for _, f in per_question(runs[d, DENSE], ("fixed", k)).values()) / len(runs[d, DENSE]) for k in range(1, 6)]
+        ax.plot(range(1, 6), f1s, color=col, lw=2, ls=(0, (4, 2)), marker="o", ms=5, mfc=SURFACE, mec=col, mew=1.5, zorder=2)
+        st, _, f, (lo, hi) = tab["self-judge"]
+        ax.errorbar(st, f, yerr=[[f - lo], [hi - f]], fmt="s", color=col, ms=9, mec=SURFACE, mew=2, elinewidth=1.5, capsize=3, zorder=3)
+        st, _, f, _ = tab["oracle"]
+        ax.plot(st, f, "^", ms=8, mfc=SURFACE, mec=col, mew=2, zorder=3)
         ax.set_title(dname, loc="left", color=INK, fontsize=11, fontweight="bold")
         ax.set_xlabel("average retrieval steps used"); ax.set_xticks(range(1, 6)); ax.set_xlim(0.8, 6.2)
         ax.set_ylabel("answer F1")
     handles = [Line2D([], [], color=c, lw=2, label=m) for m, c in MODELS.items()] + [
         Line2D([], [], color=INK2, lw=2, marker="o", ms=5, label="fixed-k (k = 1..5)"),
         Line2D([], [], color=INK2, lw=0, marker="o", ms=9, label="self-judge (stop at first SUFFICIENT)"),
-        Line2D([], [], color=INK2, lw=0, marker="D", ms=7, mfc=SURFACE, mew=2, label="oracle (stop when gold is in context)")]
+        Line2D([], [], color=INK2, lw=0, marker="D", ms=7, mfc=SURFACE, mew=2, label="oracle (stop when gold is in context)"),
+        Line2D([], [], color=MODELS["gemini-3.5-flash-lite"], lw=2, ls=(0, (4, 2)), label="3.5-flash-lite + dense retriever (squares, triangles)")]
     fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False, fontsize=9)
-    fig.suptitle("Accuracy against retrieval cost (self-judge error bars: bootstrap 95% CI)", x=0.01, ha="left", color=INK, fontsize=12)
+    fig.suptitle("Accuracy against retrieval cost (BM25 unless dashed; self-judge error bars: bootstrap 95% CI)", x=0.01, ha="left", color=INK, fontsize=12)
     fig.tight_layout(rect=(0, 0.13, 1, 0.95))
     fig.savefig("results/figures/accuracy_vs_steps.png", dpi=200); plt.close(fig)
 
@@ -80,10 +91,13 @@ def reliability():
     fig.savefig("results/figures/reliability.png", dpi=200); plt.close(fig)
 
 
+TABLE_KEYS = list(MODELS) + [DENSE]
+
+
 def tables():
     out = ["# Rule tables (data behind the figures)", ""]
     for d, dname in DATASETS.items():
-        for m in MODELS:
+        for m in TABLE_KEYS:
             out += [f"## {dname}, {m}", "", "| rule | avg steps | EM | F1 | F1 95% CI |", "|---|---|---|---|---|"]
             for name, (st, em, f, ci) in rule_table(runs[d, m]).items():
                 out.append(f"| {name} | {st:.2f} | {em:.3f} | {f:.3f} | [{ci[0]:.3f}, {ci[1]:.3f}] |")
@@ -91,9 +105,9 @@ def tables():
     if corpus_for(runs["hotpotqa", next(iter(MODELS))]):
         out += ["# RQ1 under two sufficiency labels", "",
                 "Verdict SUFFICIENT vs (a) all gold paragraphs in context, (b) gold answer text in context (yes/no questions skipped).",
-                "", "| dataset | model | label | precision | recall | F1 | premature | over-retrieval | pairs |", "|---|---|---|---|---|---|---|---|---|"]
+                "", "| dataset | model (or model__dense) | label | precision | recall | F1 | premature | over-retrieval | pairs |", "|---|---|---|---|---|---|---|---|---|"]
         for d, dname in DATASETS.items():
-            for m in MODELS:
+            for m in TABLE_KEYS:
                 corpus = corpus_for(runs[d, m])
                 for name, label in (("gold coverage", None), ("answer in context", lambda r, s: answer_in_context(r, s, corpus))):
                     x = rq1(runs[d, m]) if label is None else rq1(runs[d, m], label)
@@ -103,7 +117,7 @@ def tables():
             "(for example 'Not enough information', matched by a keyword list, so approximate). Abstentions are wrong by construction.",
             "", "| dataset | model | AUROC all steps | AUROC answered steps | ECE | steps | abstention-like answers |", "|---|---|---|---|---|---|---|"]
     for d, dname in DATASETS.items():
-        for m in MODELS:
+        for m in TABLE_KEYS:
             x = rq2(runs[d, m])
             out.append(f"| {dname} | {m} | {x['auroc']:.3f} | {x['auroc_answered']:.3f} | {x['ece']:.3f} | {x['n']} | {x['abstained']} |")
     out.append("")
