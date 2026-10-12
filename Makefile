@@ -4,13 +4,13 @@ PY = .venv/bin/python
 -include .env
 export
 
-.PHONY: all setup data run eval test
+.PHONY: all setup data run eval report test
 
 all: setup data run eval
 
 setup:
 	python3 -m venv .venv
-	.venv/bin/pip install -q -e ".[gemini,data,dev]"
+	.venv/bin/pip install -q -e ".[gemini,data,plots,dev]"
 
 data:
 	$(PY) scripts/download.py
@@ -21,6 +21,10 @@ run:
 
 eval:
 	$(PY) scripts/evaluate.py runs/*_n$(N)_seed0__$(MODEL).jsonl
+
+report:
+	$(PY) scripts/compare.py > /dev/null
+	$(PY) scripts/plots.py
 
 test:
 	.venv/bin/pytest -q

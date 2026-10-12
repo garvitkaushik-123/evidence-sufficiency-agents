@@ -70,6 +70,26 @@ def rule_table(recs, n_boot=1000, seed=0):
     return out
 
 
+def per_question(recs, rule):
+    """question_id -> (stop step, F1 of the answer at that step)."""
+    out = {}
+    for r in recs:
+        t = stop_step(rule, r)
+        out[r["question_id"]] = (t, score(r["steps"][t - 1]["answer"], r)[1])
+    return out
+
+
+def paired_diff(a, b, n_boot=2000, seed=0):
+    """Paired bootstrap of A minus B over shared questions: (mean F1 diff, F1 95% CI, mean steps diff).
+    Resamples whole questions, so the correlation between the two arms is kept."""
+    ids = sorted(a.keys() & b.keys())
+    d = [a[i][1] - b[i][1] for i in ids]
+    rng = random.Random(seed)
+    boots = sorted(sum(d[rng.randrange(len(d))] for _ in d) / len(d) for _ in range(n_boot))
+    n = len(d)
+    return sum(d) / n, (boots[int(.025 * n_boot)], boots[int(.975 * n_boot)]), sum(a[i][0] - b[i][0] for i in ids) / n
+
+
 def rq1(recs):
     """Verdict SUFFICIENT vs gold coverage over all (question, step) pairs."""
     tp = fp = fn = tn = 0

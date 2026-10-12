@@ -91,3 +91,11 @@ def test_evaluate_rules_and_metrics():
     assert stop_step(("self",), r) == 1 and stop_step(("tau", .8), r) == 2
     assert stop_step(("oracle",), r) == 2 and stop_step(("fixed", 5), r) == 3
     assert auroc([.9, .1], [1, 0]) == 1.0
+
+
+def test_paired_diff_keeps_sign_and_pairing():
+    from ess.evaluate import paired_diff
+    a = {i: (1, 0.9) for i in range(40)}
+    b = {i: (3, 0.5) for i in range(40)}
+    d, (lo, hi), ds = paired_diff(a, b, n_boot=200)
+    assert abs(d - 0.4) < 1e-9 and lo > 0 and ds == -2

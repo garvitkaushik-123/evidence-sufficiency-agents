@@ -14,7 +14,7 @@ make all                  # setup, download data, sample, run both datasets, eva
 ```
 
 `make all` runs `gemini-3.8-flash` on 500 HotpotQA + 500 MuSiQue questions. Override with `make run eval MODEL=<exact-model-id>`.
-Individual steps: `make setup`, `make data`, `make run`, `make eval`, `make test`. Runs are resumable: re-running skips questions already in the log.
+Individual steps: `make setup`, `make data`, `make run`, `make eval`, `make report` (paired tests + figures into `results/`), `make test`. Runs are resumable: re-running skips questions already in the log.
 
 **Cost and time (measured on `gemini-3.8-flash`, paid tier):** about 1,000 questions x 9 LLM calls, roughly $20 and 10+ hours sequentially. `gemini-3.5-flash-lite` costs a fraction of that. Thinking tokens are billed as output and dominate the bill. Do a pilot first: `python scripts/run_agent.py --questions raw/hotpotqa_n500_seed0.jsonl --model <id> --pilot 50` (also runs the exit check and prints token usage).
 
@@ -36,6 +36,8 @@ Gold coverage at step t = `gold_pids ⊆ context_pids`.
 - RQ1: precision / recall / F1 of the SUFFICIENT verdict vs gold coverage over all (question, step) pairs; premature stops (says sufficient, is not) and over-retrieval (says insufficient, already is).
 - RQ2: AUROC and expected calibration error of the stated probability against answer exact-match.
 - RQ3: average steps, EM and F1 (bootstrap 95% CI) for fixed-1/3/5, self-judge, thresholds 0.5 to 0.95, and oracle. Oracle runs to step 5 when gold is never covered.
+
+`make report` writes `results/paired_tests.md` (paired bootstrap, 95% CI on F1 differences between rules and between models), `results/rule_tables.md` (the numbers behind the figures) and `results/figures/` (accuracy vs retrieval steps, reliability diagram).
 
 ## Design choices and limitations
 
