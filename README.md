@@ -12,7 +12,7 @@ Models: `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong). All num
 
 - **Self-judging saves retrieval at about the same accuracy.** Stopping at the first SUFFICIENT verdict uses 1.6 to 1.8 of 5 steps on HotpotQA (65 to 67% fewer) and 2.9 to 3.3 on MuSiQue (34 to 41% fewer). Against always running 5 steps, answer F1 differs by -0.003 on MuSiQue (both models, not significant) and by -0.010 (not significant) to -0.025 (significant) on HotpotQA for the strong and small model.
 - **The model matters far more than the stopping rule.** Strong minus small F1 is +0.07 to +0.26 for every rule on both datasets (all significant).
-- **How often is "enough" true?** Against "all gold paragraphs retrieved" the verdict has precision 0.90 to 0.93 on HotpotQA and 0.65 to 0.78 on MuSiQue. Against "the gold answer text is in the retrieved evidence" precision is 0.96 to 0.98 and 0.86 to 0.95. A manual read of 50 premature stops (`results/error_analysis/`) found about 3 in 4 already answerable from what was retrieved, so gold coverage understates the verdict's precision. The truth lies between the two labels.
+- **How often is "enough" true?** Against "all gold paragraphs retrieved" the verdict has precision 0.90 to 0.93 on HotpotQA and 0.65 to 0.78 on MuSiQue. Against "the gold answer text is in the retrieved evidence" (the ground-truth-in-context heuristic that Joren et al., ICLR 2025, found reasonable but imperfect against human labels) precision is 0.96 to 0.98 and 0.86 to 0.95. A manual read of 50 premature stops (`results/error_analysis/`) found about 3 in 4 already answerable from what was retrieved, so gold coverage understates the verdict's precision. The truth lies between the two labels.
 - **Stated probabilities are almost always 0 or 1**, so threshold rules coincide and calibration is poor (ECE 0.24 to 0.34; AUROC 0.65 to 0.84 against answer exact match).
 - **More steps help on MuSiQue, not on HotpotQA.** 3 vs 5 fixed steps: no difference on HotpotQA, -0.04 F1 on MuSiQue. Even oracle stopping adds at most 0.02 F1 over self-judge.
 
@@ -61,5 +61,7 @@ Gold coverage at step t = `gold_pids ⊆ context_pids`. The four full-run logs a
 - Stated probabilities are nearly always 0 or 1, so threshold rules coincide.
 - Token usage counts thinking tokens only from commit "Count thinking tokens in usage" onward; earlier `usage:` lines undercount output.
 - Model IDs are pinned in the run file names. Preview and "latest" aliases were avoided where possible, and some older IDs (e.g. `gemini-2.5-*`) are closed to new API users.
+
+Related work notes, comparison table and a draft paragraph: `docs/related_work.md`; references: `refs.bib`.
 
 This is a technical report project, not a publication.
