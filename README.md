@@ -13,7 +13,7 @@ Models: `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong). All num
 - **Self-judging saves retrieval at about the same accuracy.** Stopping at the first SUFFICIENT verdict uses 1.6 to 1.8 of 5 steps on HotpotQA (65 to 67% fewer) and 2.9 to 3.3 on MuSiQue (34 to 41% fewer). Against always running 5 steps, answer F1 differs by -0.003 on MuSiQue (both models, not significant) and by -0.010 (not significant) to -0.025 (significant) on HotpotQA for the strong and small model.
 - **The model matters far more than the stopping rule.** Strong minus small F1 is +0.07 to +0.26 for every rule on both datasets (all significant).
 - **How often is "enough" true?** Against "all gold paragraphs retrieved" the verdict has precision 0.90 to 0.93 on HotpotQA and 0.65 to 0.78 on MuSiQue. Against "the gold answer text is in the retrieved evidence" (the ground-truth-in-context heuristic that Joren et al., ICLR 2025, found reasonable but imperfect against human labels) precision is 0.96 to 0.98 and 0.86 to 0.95. A manual read of 50 premature stops (`results/error_analysis/`) found about 3 in 4 already answerable from what was retrieved, so gold coverage understates the verdict's precision. The truth lies between the two labels.
-- **Stated probabilities are almost always 0 or 1**, so threshold rules coincide and calibration is poor (ECE 0.24 to 0.34; AUROC 0.65 to 0.84 against answer exact match).
+- **Stated probabilities are close to binary**, so thresholds barely matter and calibration is poor (ECE 0.24 to 0.34; AUROC 0.65 to 0.84 against answer exact match). The small model says exactly 0 or 1 in 93 to 94% of judgements; the strong model in 61% (HotpotQA) and 25% (MuSiQue), but 91% and 75% of its probabilities lie within 0.1 of 0 or 1. Thresholds from 0.5 to 0.8 give identical results for the small model and nearly identical ones for the strong model.
 - **More steps help on MuSiQue, not on HotpotQA.** 3 vs 5 fixed steps: no difference on HotpotQA, -0.04 F1 on MuSiQue. Even oracle stopping adds at most 0.02 F1 over self-judge.
 
 Limits: two Gemini models, 500 questions per dataset, pooled corpus easier than open-domain search, the error analysis was tagged by an LLM and needs a human check. The logs in `runs/` are the full per-step records, so every number can be recomputed without an API key: `make setup data eval report` (the `data` step only downloads the public datasets; it is needed for the answer-in-context label).
@@ -58,7 +58,7 @@ Gold coverage at step t = `gold_pids ⊆ context_pids`. The four full-run logs a
 - The sufficiency judge sees only the question and the evidence. Prompts live in `src/ess/agent.py`.
 - Decoding is temperature 0. Thinking models still think, so reruns are not guaranteed bit-identical; the logs are the source of truth.
 - The pooled corpus is easier than open-domain retrieval, and gold-paragraph coverage is a proxy for sufficiency. HotpotQA gold is matched by title, so a distractor sharing a gold title would count as gold.
-- Stated probabilities are nearly always 0 or 1, so threshold rules coincide.
+- Stated probabilities cluster at 0 and 1 (see Results), so threshold rules barely differ from self-judge.
 - Token usage counts thinking tokens only from commit "Count thinking tokens in usage" onward; earlier `usage:` lines undercount output.
 - Model IDs are pinned in the run file names. Preview and "latest" aliases were avoided where possible, and some older IDs (e.g. `gemini-2.5-*`) are closed to new API users.
 
