@@ -25,7 +25,7 @@ dense:  # robustness check: same loop with a dense retriever (gemini-embedding-2
 	for d in hotpotqa musique; do $(PY) scripts/run_agent.py --questions raw/$${d}_n500_seed0.jsonl --model $(DENSE_MODEL) --retriever dense || exit 1; done
 
 eval:
-	$(PY) scripts/evaluate.py runs/*_n$(N)_seed0__$(MODEL).jsonl
+	$(PY) scripts/evaluate.py $(filter-out %pilot.jsonl,$(wildcard runs/*_n$(N)_seed0__*.jsonl))  # every full-run log
 
 report:
 	$(PY) scripts/compare.py > /dev/null
