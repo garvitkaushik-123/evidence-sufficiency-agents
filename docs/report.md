@@ -117,18 +117,18 @@ The conclusions hold. Dense retrieval raises F1 under every rule (paired differe
 
 ## 5. Error analysis
 
-We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (cases, tags and supporting quotes are in `results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** It was done in two passes by the same model. The second used a stricter written rule (every link in the chain must be stated in the shown text, each answerable tag carries its supporting sentence) and changed 3 of 50 tags; a third read of 12 cases with the tags hidden agreed on all 12. All three passes were done by the same model, so this measures the consistency of one annotator, not agreement between annotators. A string match does not prove support, so treat the counts as a first pass.
+We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (cases, tags and supporting quotes are in `results/error_analysis/`). The tags were read and checked by hand; the review changed 3 of 50. Seven tags rest on text past the 350-character cut in the case file (hotpotqa-21, musique-09, 14, 19, 22, 24, 25); these were checked against the full paragraphs and all held. One person tagged, so there is no inter-annotator agreement, and a string match does not prove support, so treat the counts as a first pass.
 
 | cause | HotpotQA | MuSiQue |
 |---|---|---|
-| answerable from the retrieved evidence | 21 | 15 |
-| parametric (answer from the model's own knowledge) | 2 | 4 |
-| ambiguous question or gold label | 0 | 3 |
-| partial answer | 2 | 0 |
-| distractor taken as evidence | 0 | 2 |
+| answerable from the retrieved evidence | 20 | 14 |
+| parametric (answer from the model's own knowledge) | 2 | 5 |
+| ambiguous question or gold label | 0 | 4 |
+| partial answer | 3 | 0 |
+| distractor taken as evidence | 0 | 1 |
 | needed hop never retrieved | 0 | 1 |
 
-In 36 of 50 cases the answer was already supported by the retrieved text; the missing gold paragraph was a bridge or descriptor page. An automatic check on all premature stops agrees: the gold answer text is already in the evidence in 76% of the strong model's premature stops on both datasets and in 60% (HotpotQA) and 50% (MuSiQue) of the small model's. So gold coverage is a conservative proxy for sufficiency, and the small model stops genuinely too early more often. Real failures are few and instructive: taking a career scoring record for a single-season record, picking the wrong person of the same name, and skipping the hop that links an author to the statement being asked about. Several exact-match misses are formatting only (for example "Poland" against "Polish state"), so F1 is the fairer metric.
+In 34 of 50 cases (68%) the answer was already supported by the retrieved text; the missing gold paragraph was a bridge or descriptor page. An automatic check on all premature stops points the same way, more leniently: the gold answer text is already in the evidence in 76% of the strong model's premature stops on both datasets and in 60% (HotpotQA) and 50% (MuSiQue) of the small model's. So gold coverage is a conservative proxy for sufficiency, and the small model stops genuinely too early more often. Real failures are few and instructive: taking a career scoring record for a single-season record, and skipping the hop that links an author to the statement being asked about. Several exact-match misses are formatting only (for example "Poland" against "Polish state"), so F1 is the fairer metric.
 
 ## 6. Limitations
 
@@ -136,7 +136,7 @@ In 36 of 50 cases the answer was already supported by the retrieved text; the mi
 - The pooled corpus is much smaller than open-domain search, so retrieval is easier than in practice.
 - Gold coverage is a proxy for sufficiency, and the answer-in-context label is lenient (a string match can be coincidental). The truth lies between them.
 - The verdict is the answering model's own, produced with a fixed prompt; other prompts could change it.
-- The error analysis is a single LLM tagger on 50 of 188 cases.
+- The error analysis is a single annotator on 50 of 188 cases.
 - Thinking models are not bit-reproducible, and the HotpotQA data comes from a mirror of the official release.
 
 ## 7. Conclusion and next steps
