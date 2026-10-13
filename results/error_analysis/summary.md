@@ -1,6 +1,6 @@
 # Error analysis: premature stops of the self-judge rule
 
-An LLM (`gemini-3.8-flash`) tagged all 50 cases first; the author then tagged all 50 independently without seeing the LLM tags. Agreement is 47 of 50 (94%, Cohen's kappa 0.88, against the LLM's second-pass tags). The three disagreements (musique-08, musique-13, hotpotqa-06) went to a second human reviewer, blind to the tags and the gold answer, who sided with the author each time; `tags.csv` holds the resolved tags. One cause per case in `tags.csv`; `cases.md` has the evidence.
+An LLM tagged all 50 cases first; the author then tagged all 50 independently without seeing the LLM tags. Agreement is 47 of 50 (94%, Cohen's kappa 0.88, against the LLM's second-pass tags). The three disagreements (musique-08, musique-13, hotpotqa-06) went to a second human reviewer, blind to the tags and the gold answer, who sided with the author each time; `tags.csv` holds the resolved tags. One cause per case in `tags.csv`; `cases.md` has the evidence.
 
 Sample: 50 of the 188 premature stops of `gemini-3.8-flash` (25 of 84 on HotpotQA, 25 of 104 on MuSiQue, seed 0). A premature stop is the self-judge stop step where the verdict is SUFFICIENT but not all gold paragraphs are in context.
 
