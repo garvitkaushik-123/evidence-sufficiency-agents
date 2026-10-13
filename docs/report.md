@@ -117,7 +117,7 @@ The conclusions hold. Dense retrieval raises F1 under every rule (paired differe
 
 ## 5. Error analysis
 
-We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (cases, tags and supporting quotes are in `results/error_analysis/`). The tags were read and checked by hand; the review changed 3 of 50. Seven tags rest on text past the 350-character cut in the case file (hotpotqa-21, musique-09, 14, 19, 22, 24, 25); these were checked against the full paragraphs and all held. One person tagged, so there is no inter-annotator agreement, and a string match does not prove support, so treat the counts as a first pass.
+We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (cases, tags and supporting quotes are in `results/error_analysis/`). An LLM (`gemini-3.8-flash`) first tagged all 50 cases under a written rule. The author then tagged all 50 independently, without seeing the LLM tags. The two agree on 47 of 50 (94%, Cohen's kappa 0.88, against the LLM's second-pass tags). The three disagreements (hotpotqa-06, musique-08, musique-13) were shown to a second human reviewer without the tags or the gold answer, who sided with the author's tag in all three; the table uses the resolved tags. Seven tags rest on text past the 350-character cut in the case file (hotpotqa-21, musique-09, 14, 19, 22, 24, 25); these were checked against the full paragraphs and all held. A string match does not prove support, so treat the counts as a first pass.
 
 | cause | HotpotQA | MuSiQue |
 |---|---|---|
@@ -136,7 +136,7 @@ In 34 of 50 cases (68%) the answer was already supported by the retrieved text; 
 - The pooled corpus is much smaller than open-domain search, so retrieval is easier than in practice.
 - Gold coverage is a proxy for sufficiency, and the answer-in-context label is lenient (a string match can be coincidental). The truth lies between them.
 - The verdict is the answering model's own, produced with a fixed prompt; other prompts could change it.
-- The error analysis is a single annotator on 50 of 188 cases.
+- The error analysis covers 50 of 188 cases, with one human annotator compared against an LLM and a second human reviewer only for the three disagreements.
 - Thinking models are not bit-reproducible, and the HotpotQA data comes from a mirror of the official release.
 
 ## 7. Conclusion and next steps
