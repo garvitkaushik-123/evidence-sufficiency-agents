@@ -63,6 +63,6 @@ Gold coverage at step t = `gold_pids ⊆ context_pids`. The six full-run logs ar
 - Token usage counts thinking tokens only from commit "Count thinking tokens in usage" onward; earlier `usage:` lines undercount output.
 - Model IDs are pinned in the run file names. Preview and "latest" aliases were avoided where possible, and some older IDs (e.g. `gemini-2.5-*`) are closed to new API users.
 
-Related work notes, comparison table and a draft paragraph: `docs/related_work.md`; references: `refs.bib`.
+The report: [docs/report.pdf](docs/report.pdf) (source `docs/report.md`, rebuild with `sh docs/build_report.sh`, needs pandoc and Chrome). Related work notes and comparison table: `docs/related_work.md`; references: `refs.bib`.
 
 This is a technical report project, not a publication.
