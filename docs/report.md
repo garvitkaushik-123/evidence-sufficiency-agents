@@ -143,6 +143,10 @@ In 34 of 50 cases (68%) the answer was already supported by the retrieved text; 
 
 Letting a model decide when to stop retrieving worked well here: a third to two thirds of the retrieval saved at an accuracy cost that is mostly not distinguishable from zero, a choice of model that matters far more than the choice of rule, and the same pattern with a dense retriever. Its judgement is better than gold coverage suggests, but the stated probability is a coarse, poorly calibrated signal: once abstentions are set aside it is only weakly informative about correctness for the strong model and uninformative for the small one. A thesis could test open-domain corpora and the strong model with the dense retriever, add a separate sufficiency judge as in Joren et al. (2025) to compare with self-judgement, train or calibrate the stopping signal, and run the same loop with open-weights models.
 
+## Acknowledgments
+
+I used AI assistants for help with code, analysis and editing. All experiments, results and claims were checked by the author, who takes responsibility for them.
+
 ## References
 
 - Asai, A., Wu, Z., Wang, Y., Sil, A., and Hajishirzi, H. (2023). Self-RAG: Learning to retrieve, generate, and critique through self-reflection. arXiv:2310.11511.
