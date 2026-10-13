@@ -1,6 +1,6 @@
 # Error analysis: premature stops of the self-judge rule
 
-**Tagging was done by Claude (an LLM), not by a human annotator**, in two passes by the same model (see Second pass). A human check is still missing; read `cases.md` and re-tag a dozen cases before quoting the counts as final. One cause per case in `tags.csv` (`first_pass_cause` keeps the original tag).
+**Tagging was done by an LLM annotator, not by a human**, in two passes by the same model (see Second pass). A human check is still missing; read `cases.md` and re-tag a dozen cases before quoting the counts as final. One cause per case in `tags.csv` (`first_pass_cause` keeps the original tag).
 
 Sample: 50 of the 188 premature stops of `gemini-3.8-flash` (25 of 84 on HotpotQA, 25 of 104 on MuSiQue, seed 0). A premature stop is the self-judge stop step where the verdict is SUFFICIENT but not all gold paragraphs are in context.
 
