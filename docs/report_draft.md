@@ -106,7 +106,7 @@ The conclusions hold. Dense retrieval raises F1 under every rule (paired differe
 
 ## 5. Error analysis
 
-We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** It was done in two passes by the same model. The second used a stricter written rule (every link in the chain must be stated in the shown text, each answerable tag carries its supporting sentence) and changed 3 of 50 tags; this measures consistency of one annotator, not agreement between annotators. A string match does not prove support, so treat the counts as a first pass.
+We sampled 50 of the 188 premature stops of the strong model (25 per dataset, fixed seed) and tagged why the agent stopped (`results/error_analysis/`). **The tagging was done by an LLM, not a human, and a human check is still missing.** It was done in two passes by the same model. The second used a stricter written rule (every link in the chain must be stated in the shown text, each answerable tag carries its supporting sentence) and changed 3 of 50 tags; a third read of 12 cases with the tags hidden agreed on all 12. All three passes were done by the same model, so this measures the consistency of one annotator, not agreement between annotators. A string match does not prove support, so treat the counts as a first pass.
 
 | cause | HotpotQA | MuSiQue |
 |---|---|---|
