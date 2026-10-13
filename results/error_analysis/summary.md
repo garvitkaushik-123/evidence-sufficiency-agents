@@ -2,6 +2,8 @@
 
 An LLM tagged all 50 cases first; the author then tagged all 50 independently without seeing the LLM tags. Agreement is 47 of 50 (94%, Cohen's kappa 0.88, against the LLM's second-pass tags). The three disagreements (musique-08, musique-13, hotpotqa-06) went to a second human reviewer, blind to the tags and the gold answer, who sided with the author each time; `tags.csv` holds the resolved tags. One cause per case in `tags.csv`; `cases.md` has the evidence.
 
+Files: `llm_tags.csv` has the LLM's tags (`first_pass_cause` and the second-pass `cause`); `human_tags.csv` has the author's tags, recorded after the review as the LLM's tags with the author's three differing tags substituted, so it is a reconstruction from the author's record, not the original tagging sheet. `python scripts/agreement.py` recomputes the agreement figures.
+
 Sample: 50 of the 188 premature stops of `gemini-3.8-flash` (25 of 84 on HotpotQA, 25 of 104 on MuSiQue, seed 0). A premature stop is the self-judge stop step where the verdict is SUFFICIENT but not all gold paragraphs are in context.
 
 ## Causes
@@ -18,7 +20,7 @@ Sample: 50 of the 188 premature stops of `gemini-3.8-flash` (25 of 84 on HotpotQ
 ## What it says
 
 - **Most "premature" stops are not premature in the sense the question cares about.** In 34 of 50 cases the answer is already supported by what the agent retrieved. The "missing" gold paragraph is usually a bridge or descriptor page (for example the page that says "Eagle Feather coached the Indians") that the question's wording repeats or that the answer does not need. Gold coverage is therefore a conservative proxy for sufficiency: the RQ1 precision figures are lower bounds.
-- **Genuine failures are a minority: 9 of 50 (18%)** are distractor, bridge-missed, partial-answer or a wrong reading of an ambiguous question. Seven more are right for the wrong reason (parametric).
+- **Genuine failures are a minority: 5 of 50 (10%)** are distractor, bridge-missed or partial-answer. Four more are ambiguous: in each the model's answer is defensible but differs from the gold. Seven are right for the wrong reason (parametric).
 - **Many EM misses are formatting.** 'Poland' vs 'Polish state', 'June' vs 'mid-June', 'Season 3' vs 'season three'. F1 is the fairer metric here.
 - **The clearest real failure patterns** are on MuSiQue: taking a career record for a single-season record (musique-16), and skipping the hop that says what Gates played up (musique-15).
 
@@ -35,7 +37,7 @@ For the strong model this is close to the manual 68% (34 of 50); the string matc
 
 ## Caveats
 
-- Single annotator, single model (`gemini-3.8-flash`), 50 of 188 cases, and the taxonomy was adapted after reading the cases (`answerable` was added because it dominated).
+- One human annotator compared against an LLM, with a second human reviewer only for the three disagreements; one agent model (`gemini-3.8-flash`); 50 of 188 cases; and the taxonomy was adapted after reading the cases (`answerable` was added because it dominated).
 - "Answer in shown evidence" is a string match, so it undercounts paraphrases and counts coincidental mentions.
 
 ## Borderline calls
@@ -43,5 +45,5 @@ For the strong model this is close to the manual 68% (34 of 50); the string matc
 - hotpotqa-09 (parametric): the shown Costus osae paragraph calls Costus a family of its own, which arguably implies it is not in Apiaceae. Parametric is the safer tag.
 - musique-09, musique-24 (parametric): the missing hop picks out which network is meant. In the descriptor cases (hotpotqa-10, 11, 12, 17, musique-02, 12) the entity is already fixed and the missing page only confirms a property, so they stay answerable.
 - musique-17 (parametric): the shown text has two treaties ceding territory to the US (Paris 1783, Adams-Onis); only the unstated Minneapolis-Mississippi link picks Paris.
-- hotpotqa-06 and hotpotqa-08 are both partial-answer: the evidence gives part of the location, not all of it.
+- hotpotqa-06 and hotpotqa-08 are both partial-answer: in 08 the evidence gives the state but not the city; in 06 it names the club but not where it is.
 - `cases.md` truncates each paragraph to about 350 characters. Seven tags depend on later text (hotpotqa-21, musique-09, 14, 19, 22, 24, 25); they were checked against the full paragraphs and held. The February 7, 2018 date for musique-09 and 24 is in the text; their parametric tag is the borderline part.
