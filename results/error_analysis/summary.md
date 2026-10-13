@@ -42,6 +42,10 @@ Done on 12 Oct 2026 by the same LLM with a stricter, written rule: a case is `an
 
 The 94% is agreement of one annotator with itself, not inter-annotator agreement, and says little about how a person would tag. Borderline calls that stayed: hotpotqa-01 and hotpotqa-13 (the answer follows from one clause or a trivial inference), musique-02, musique-06 and musique-12 (a descriptor clause is not stated but the answer is fixed by the rest).
 
+## Third read (12 cases)
+
+On 13 Oct 2026 twelve cases (six per dataset, seed 7) were re-read from the raw evidence and tagged again with the earlier tags hidden from the view (`second_read.csv`). All 12 matched the tags in `tags.csv` (hotpotqa-02, 03, 05, 11, 13, 21; musique-02, 03, 05, 11, 13, 21). The reader was the same LLM and could not forget the first pass, so this is a consistency check, not independent annotation, and it is not a human. A person should still re-tag some cases.
+
 ## Caveats
 
 - Single tagger, single model (`gemini-3.8-flash`), 50 of 188 cases, and the taxonomy was adapted after reading the cases (`answerable` was added because it dominated).
