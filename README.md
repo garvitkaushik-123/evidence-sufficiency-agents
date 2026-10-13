@@ -66,3 +66,7 @@ Gold coverage at step t = `gold_pids ⊆ context_pids`. The six full-run logs ar
 The report: [docs/report.pdf](docs/report.pdf) (source `docs/report.md`, rebuild with `sh docs/build_report.sh`, needs pandoc and Chrome). Related work notes and comparison table: `docs/related_work.md`; references: `refs.bib`.
 
 This is a technical report project, not a publication.
+
+## License
+
+Code: MIT (see `LICENSE`). The logs in `runs/` and the case file in `results/error_analysis/` contain text from HotpotQA (CC BY-SA 4.0) and MuSiQue; that text stays under its original licences.
