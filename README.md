@@ -1,5 +1,7 @@
 # Evidence sufficiency in multi-step retrieval agents
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23437805.svg)](https://doi.org/10.5281/zenodo.23437805)
+
 When a retrieval agent says "I have enough evidence", how often is that true, does it predict a correct answer, and which stopping rule gives the best accuracy per retrieval step?
 
 The agent always runs all 5 retrieval steps and logs a sufficiency verdict, a probability and its current answer at every step. Every stopping rule (fixed steps, self-judge, probability threshold, oracle) is then evaluated offline from those logs, so each question runs once per model.
@@ -66,6 +68,23 @@ Gold coverage at step t = `gold_pids ⊆ context_pids`. The six full-run logs ar
 The report: [docs/report.pdf](docs/report.pdf) (source `docs/report.md`, rebuild with `sh docs/build_report.sh`, needs pandoc and Chrome). Related work notes and comparison table: `docs/related_work.md`; references: `refs.bib`.
 
 This is a technical report project, not a publication.
+
+## How to cite
+
+Kaushik, G. (2026). *When Is Enough Evidence Enough? Sufficiency Judgments and Stopping Rules in Multi-Step Retrieval Agents* (Version 1.0) [Technical report]. Zenodo. https://doi.org/10.5281/zenodo.23437805
+
+```bibtex
+@techreport{kaushik2026evidence,
+  author    = {Kaushik, Garvit},
+  title     = {When Is Enough Evidence Enough? Sufficiency Judgments and Stopping Rules in Multi-Step Retrieval Agents},
+  year      = {2026},
+  type      = {Technical report},
+  publisher = {Zenodo},
+  version   = {1.0},
+  doi       = {10.5281/zenodo.23437805},
+  url       = {https://doi.org/10.5281/zenodo.23437805}
+}
+```
 
 ## License
 

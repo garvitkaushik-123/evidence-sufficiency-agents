@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the technical report below."
+title: "Evidence sufficiency in multi-step retrieval agents"
+authors:
+  - family-names: Kaushik
+    given-names: Garvit
+    orcid: "https://orcid.org/0009-0005-3805-7154"
+repository-code: "https://github.com/garvitkaushik-123/evidence-sufficiency-agents"
+license: MIT
+preferred-citation:
+  type: report
+  title: "When Is Enough Evidence Enough? Sufficiency Judgments and Stopping Rules in Multi-Step Retrieval Agents"
+  authors:
+    - family-names: Kaushik
+      given-names: Garvit
+      orcid: "https://orcid.org/0009-0005-3805-7154"
+  year: 2026
+  month: 10
+  publisher:
+    name: Zenodo
+  version: "1.0"
+  doi: "10.5281/zenodo.23437805"
+  url: "https://doi.org/10.5281/zenodo.23437805"
