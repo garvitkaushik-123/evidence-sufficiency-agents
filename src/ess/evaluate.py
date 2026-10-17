@@ -37,6 +37,11 @@ def covered(r, s):
     return set(r["gold_pids"]) <= set(s["context_pids"])
 
 
+def covered_strict(r, s):
+    """BrowseComp-Plus second label: every clue's evidence document is in context."""
+    return set(r["evidence_pids"]) <= set(s["context_pids"])
+
+
 def stop_step(rule, r):
     T = len(r["steps"])
     if rule[0] == "fixed":
@@ -119,10 +124,11 @@ def rq1(recs, label=covered):
             "premature": fp, "over_retrieval": fn, "n": tp + fp + fn + tn}
 
 
-def corpus_for(recs, n=500, seed=0):
+def corpus_for(recs, n=None, seed=0):
     """Pooled corpus of the sampled questions behind a log; None if raw/ has not been built (make data)."""
     from pathlib import Path
     from ess import data
+    n = n or (100 if recs[0]["dataset"] == "browsecomp" else 500)
     path = Path(f"raw/{recs[0]['dataset']}_n{n}_seed{seed}.jsonl")
     return {p["pid"]: p for p in data.build_corpus(data.load_questions(path))} if path.exists() else None
 
@@ -168,6 +174,9 @@ def report(path):
     recs = load(path)
     print(f"== {path} ({len(recs)} questions)")
     print("RQ1 (gold coverage)", {k: round(v, 3) if isinstance(v, float) else v for k, v in rq1(recs).items()})
+    if "evidence_pids" in recs[0]:
+        print("RQ1 (strict: all evidence)", {k: round(v, 3) if isinstance(v, float) else v
+                                            for k, v in rq1(recs, covered_strict).items()})
     corpus = corpus_for(recs)
     if corpus:
         print("RQ1 (answer in context)", {k: round(v, 3) if isinstance(v, float) else v

@@ -6,7 +6,7 @@ export
 
 DENSE_MODEL ?= gemini-3.5-flash-lite
 
-.PHONY: all setup data run dense eval report test
+.PHONY: all setup data run dense eval report test pilot-bc
 
 all: setup data run eval
 
@@ -23,6 +23,9 @@ run:
 
 dense:  # robustness check: same loop with a dense retriever (gemini-embedding-2), small model
 	for d in hotpotqa musique; do $(PY) scripts/run_agent.py --questions raw/$${d}_n500_seed0.jsonl --model $(DENSE_MODEL) --retriever dense || exit 1; done
+
+pilot-bc:  # BrowseComp-Plus pilot (100 questions, T=8, k=3); needs raw/browsecomp_n100_seed0.jsonl. Never commit its logs (see .gitignore)
+	$(PY) scripts/run_agent.py --questions raw/browsecomp_n100_seed0.jsonl --model $(MODEL) --T 8 --k 3
 
 eval:
 	$(PY) scripts/evaluate.py $(filter-out %pilot.jsonl,$(wildcard runs/*_n$(N)_seed0__*.jsonl))  # every full-run log

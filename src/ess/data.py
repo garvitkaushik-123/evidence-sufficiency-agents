@@ -52,6 +52,31 @@ def load_musique(path):
     return out
 
 
+def _bc_doc(d, max_words=380):
+    """BrowseComp-Plus document, cut to its first ~512 tokens (the benchmark's convention)."""
+    return {"pid": d["docid"], "title": d.get("url") or d["docid"], "text": " ".join(d["text"].split()[:max_words])}
+
+
+def load_browsecomp(path):
+    """Decrypted BrowseComp-Plus jsonl: {query_id, query, answer, evidence_docs, gold_docs, negative_docs}, docs {docid, text, url}.
+    Adds evidence_pids (every clue's document) next to gold_pids (documents containing the answer)."""
+    out = []
+    with open(path) as f:
+        for line in f:
+            if not line.strip():
+                continue
+            ex = json.loads(line)
+            docs = {}
+            for key in ("evidence_docs", "gold_docs", "negative_docs"):
+                for d in ex[key]:
+                    docs.setdefault(d["docid"], _bc_doc(d))
+            out.append({"id": str(ex["query_id"]), "dataset": "browsecomp", "question": ex["query"],
+                        "answer": ex["answer"], "aliases": [], "paragraphs": list(docs.values()),
+                        "gold_pids": [d["docid"] for d in ex["gold_docs"]],
+                        "evidence_pids": [d["docid"] for d in ex["evidence_docs"]]})
+    return out
+
+
 def sample(questions, n, seed):
     """Deterministic sample: sort by id first so the result does not depend on file order."""
     qs = sorted(questions, key=lambda q: q["id"])

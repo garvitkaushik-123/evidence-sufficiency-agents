@@ -7,3 +7,4 @@ runs/*pilot*
 .env
 *.egg-info/
 docs/report.html
+runs/*browsecomp*

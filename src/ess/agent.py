@@ -69,10 +69,13 @@ def run_question(q, llm, retriever, T=5, k=3, run_id="", retriever_name="bm25"):
         steps.append({"step": t, "query": query, "retrieved_pids": [h["pid"] for h in hits],
                       "context_pids": [p["pid"] for p in context], "verdict": verdict,
                       "probability": prob, "answer": answer, "raw_judge": raw, "parse_ok": ok})
-    return {"run": run_id, "model": llm.model_id, "retriever": retriever_name,
-            "question_id": q["id"], "dataset": q["dataset"], "question": q["question"],
-            "gold_answer": q["answer"], "aliases": q.get("aliases", []),
-            "gold_pids": q["gold_pids"], "T": T, "k": k, "steps": steps}
+    rec = {"run": run_id, "model": llm.model_id, "retriever": retriever_name,
+           "question_id": q["id"], "dataset": q["dataset"], "question": q["question"],
+           "gold_answer": q["answer"], "aliases": q.get("aliases", []),
+           "gold_pids": q["gold_pids"], "T": T, "k": k, "steps": steps}
+    if "evidence_pids" in q:  # BrowseComp-Plus only: documents behind every clue, for the strict sufficiency label
+        rec["evidence_pids"] = q["evidence_pids"]
+    return rec
 
 
 def run_all(questions, llm, retriever, out_path, T=5, k=3, run_id="", retriever_name="bm25"):

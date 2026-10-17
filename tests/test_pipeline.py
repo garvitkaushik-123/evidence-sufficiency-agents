@@ -139,3 +139,34 @@ def test_dense_retriever_search_exclude_and_cache(tmp_path):
     assert [p["pid"] for p in r.search("q2", k=2, exclude={"p2"})] == ["p3", "p0"]
     DenseRetriever(paras, embed, cache=cache)  # second build reads the cache, no new document embedding
     assert calls.count("RETRIEVAL_DOCUMENT") == 1
+
+
+def browsecomp_fixture(tmp_path, n=3):
+    rows = []
+    for i in range(n):
+        doc = lambda tag, j: {"docid": f"{tag}{i}-{j}", "text": " ".join(["word"] * 600), "url": f"http://x/{tag}{i}-{j}"}
+        rows.append({"query_id": f"q{i}", "query": f"clue question {i}", "answer": f"Ans{i}",
+                     "evidence_docs": [doc("e", 0), doc("e", 1), doc("g", 0)], "gold_docs": [doc("g", 0)],
+                     "negative_docs": [doc("n", 0), doc("n", 1)]})
+    p = tmp_path / "bc.jsonl"
+    p.write_text("\n".join(json.dumps(r) for r in rows))
+    return p
+
+
+def test_browsecomp_loader_shape(tmp_path):
+    qs = data.load_browsecomp(browsecomp_fixture(tmp_path))
+    q = qs[0]
+    pids = {p["pid"] for p in q["paragraphs"]}
+    assert q["dataset"] == "browsecomp" and q["id"] == "q0"
+    assert set(q["gold_pids"]) <= set(q["evidence_pids"]) <= pids
+    assert len(pids) == 5  # the shared gold doc is stored once
+    assert all(len(p["text"].split()) == 380 for p in q["paragraphs"])
+
+
+def test_browsecomp_sampling_and_strict_label(tmp_path):
+    from ess.evaluate import covered, covered_strict
+    qs = data.load_browsecomp(browsecomp_fixture(tmp_path))
+    assert [q["id"] for q in data.sample(qs, 2, 0)] == [q["id"] for q in data.sample(list(reversed(qs)), 2, 0)]
+    r = {"gold_pids": qs[0]["gold_pids"], "evidence_pids": qs[0]["evidence_pids"]}
+    s = {"context_pids": qs[0]["gold_pids"]}
+    assert covered(r, s) and not covered_strict(r, s)
