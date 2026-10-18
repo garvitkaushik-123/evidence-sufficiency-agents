@@ -36,7 +36,9 @@ Does self-judged stopping still work on hard, deep-research-style questions? A p
 
 On this pilot, self-judged stopping used about half the steps with no significant accuracy change for either model. It matches the oracle (stop when all gold documents are in context) on accuracy and stops earlier. Fixed 4 steps loses 4 to 6 points and fixed 1 step loses about 40. The verdict is far less reliable against the strict label (all clue documents): the agent often says SUFFICIENT without them all.
 
-Read it as a pilot: 100 questions (accuracy intervals about +-9 points), a pooled corpus much easier than the full 100K-document collection (so accuracy is far above the paper's BM25 numbers and must not be compared with its leaderboard), two Gemini models, and an LLM judge. The judge was checked on 20 random judgements: 19 agree, but only 2 of the 20 were labelled by the author; the other 18 were clear-cut cases read by an LLM. Hedged answers (for example "X (or Y)") were rare (1 of 136 correct fixed-8 answers), so judge leniency on them does not change the result.
+Read it as a pilot: 100 questions (accuracy intervals about +-9 points), a pooled corpus much easier than the full 100K-document collection (so accuracy is far above the paper's BM25 numbers and must not be compared with its leaderboard), two Gemini models, and an LLM judge. The judge was checked on 20 random judgements marked by the author (who saw the judge's verdict): 19 agree (Cohen's kappa 0.89); the one disagreement is a hedged answer ("X (or Y)") the judge accepted. Hedged answers were rare (1 of 136 correct fixed-8 answers), so this does not change the result.
+
+Memorisation check: every judge-correct answer was bucketed as A (answer text in the retrieved documents), B (text not found, a gold document in context) or C (neither). At step 8, C is empty for both models (A 86% and 84%, B 14% and 16%), so the final accuracy comes from retrieval in the pooled corpus. C appears early: the strong model answers 10 of its 37 correct step-1 answers (27%) with neither, and 24 of 530 (5%) over all steps pooled, and the cases opened by hand mostly look like answers from the model's own knowledge. The small model has 3 C answers in total. This slightly inflates the strong model's fixed-1 accuracy but not the step-8 comparison; A and B cannot rule out that a model also knew the answer. Details in `results/browsecomp_pilot.md`.
 
 Reproduce (needs a `GEMINI_API_KEY`; about $3.5 for the small model and $11.5 for the strong one, plus under $2 for the judge):
 
@@ -47,6 +49,7 @@ python scripts/sample.py --browsecomp raw/browsecomp_plus_decrypted.jsonl   # 10
 make pilot-bc MODEL=gemini-3.5-flash-lite                                 # then again with gemini-3.8-flash
 python scripts/judge.py runs/browsecomp_n100_seed0__<model>.jsonl --handcheck 20
 python scripts/evaluate_bc.py runs/browsecomp_n100_seed0__<model>.jsonl ...
+python scripts/pilot_checks.py                                              # judge agreement and memorisation buckets, appended to results/
 ```
 
 The benchmark asks that its data not appear as plain text online, so the decrypted data, run logs and judged files are gitignored (`raw/`, `runs/*browsecomp*`). Only the sampled query IDs (`data/ids/browsecomp_n100_seed0.json`) and aggregate results are committed, so the run logs for this pilot are not in the repository and the numbers above are reproduced by rerunning the steps.
