@@ -21,6 +21,36 @@ Models: `gemini-3.5-flash-lite` (small) and `gemini-3.8-flash` (strong). All num
 
 Limits: two Gemini models (the dense retriever only with the small one), 500 questions per dataset, pooled corpus easier than open-domain search, the error analysis covers 50 cases with one human annotator (94% agreement with an LLM tagger, Cohen's kappa 0.88) and a second human reviewer for the three disagreements. The logs in `runs/` are the full per-step records, so every number can be recomputed without an API key: `make setup data eval report` (the `data` step only downloads the public datasets; it is needed for the answer-in-context label).
 
+## BrowseComp-Plus pilot (100 questions, 8 steps)
+
+Does self-judged stopping still work on hard, deep-research-style questions? A pilot on [BrowseComp-Plus](https://github.com/texttron/BrowseComp-Plus): 100 questions sampled with seed 0, a pooled corpus of those questions' evidence, gold and negative documents (8,148 documents, each cut to its first 380 words, about 512 tokens), BM25, T=8 steps, k=3. The agent loop and prompts are unchanged; only the data differ. Correctness is judged by an LLM (the BrowseComp-Plus grader prompt, run with `gemini-3.8-flash`), because exact match undercounts. Full tables: [`results/browsecomp_pilot.md`](results/browsecomp_pilot.md).
+
+| | gemini-3.5-flash-lite | gemini-3.8-flash |
+|---|---|---|
+| Avg steps, self-judge (fixed-8 = 8) | 3.83 (52% saved) | 4.18 (48% saved) |
+| Judged accuracy, self-judge | 0.58 | 0.78 |
+| Judged accuracy, fixed-8 | 0.59 | 0.77 |
+| Self-judge minus fixed-8 (95% CI) | -0.01 [-0.07, +0.05] | +0.01 [+0.00, +0.03] |
+| Verdict precision vs gold coverage / strict (all evidence) / answer in context | 0.65 / 0.28 / 0.76 | 0.73 / 0.32 / 0.86 |
+| AUROC of the stated probability, answered steps only | 0.53 | 0.88 |
+
+On this pilot, self-judged stopping used about half the steps with no significant accuracy change for either model. It matches the oracle (stop when all gold documents are in context) on accuracy and stops earlier. Fixed 4 steps loses 4 to 6 points and fixed 1 step loses about 40. The verdict is far less reliable against the strict label (all clue documents): the agent often says SUFFICIENT without them all.
+
+Read it as a pilot: 100 questions (accuracy intervals about +-9 points), a pooled corpus much easier than the full 100K-document collection (so accuracy is far above the paper's BM25 numbers and must not be compared with its leaderboard), two Gemini models, and an LLM judge. The judge was checked on 20 random judgements: 19 agree, but only 2 of the 20 were labelled by the author; the other 18 were clear-cut cases read by an LLM. Hedged answers (for example "X (or Y)") were rare (1 of 136 correct fixed-8 answers), so judge leniency on them does not change the result.
+
+Reproduce (needs a `GEMINI_API_KEY`; about $3.5 for the small model and $11.5 for the strong one, plus under $2 for the judge):
+
+```
+# download Tevatron/browsecomp-plus (public, MIT, ~2.8 GB parquet) into raw/dl/browsecomp, then:
+python scripts/decrypt_browsecomp.py raw/dl/browsecomp                   # -> raw/browsecomp_plus_decrypted.jsonl
+python scripts/sample.py --browsecomp raw/browsecomp_plus_decrypted.jsonl   # 100 questions, seed 0
+make pilot-bc MODEL=gemini-3.5-flash-lite                                 # then again with gemini-3.8-flash
+python scripts/judge.py runs/browsecomp_n100_seed0__<model>.jsonl --handcheck 20
+python scripts/evaluate_bc.py runs/browsecomp_n100_seed0__<model>.jsonl ...
+```
+
+The benchmark asks that its data not appear as plain text online, so the decrypted data, run logs and judged files are gitignored (`raw/`, `runs/*browsecomp*`). Only the sampled query IDs (`data/ids/browsecomp_n100_seed0.json`) and aggregate results are committed, so the run logs for this pilot are not in the repository and the numbers above are reproduced by rerunning the steps.
+
 ## Reproduce
 
 ```
