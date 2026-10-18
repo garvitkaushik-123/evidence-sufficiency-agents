@@ -60,9 +60,11 @@ Judge-correct answers by where the answer comes from: A = answer text in the ret
 |---|---|---|---|---|---|
 | gemini-3.5-flash-lite | step 1 | 20 | 19 (95%) | 0 (0%) | 1 (5%) |
 | gemini-3.5-flash-lite | step 8 | 59 | 51 (86%) | 8 (14%) | 0 (0%) |
+| gemini-3.5-flash-lite | self-judge stop step | 58 | 50 (86%) | 6 (10%) | 2 (3%) |
 | gemini-3.5-flash-lite | all steps | 369 | 329 (89%) | 37 (10%) | 3 (1%) |
 | gemini-3.8-flash | step 1 | 37 | 27 (73%) | 0 (0%) | 10 (27%) |
 | gemini-3.8-flash | step 8 | 77 | 65 (84%) | 12 (16%) | 0 (0%) |
+| gemini-3.8-flash | self-judge stop step | 78 | 65 (83%) | 11 (14%) | 2 (3%) |
 | gemini-3.8-flash | all steps | 530 | 445 (84%) | 61 (12%) | 24 (5%) |
 
-Reading: at step 8 every correct answer for both models has the answer text or a gold document in context (C = 0), so the final accuracy comes from retrieval in the pooled corpus. C is not empty early on: the strong model answers 10 of its 37 correct step-1 answers (27%) with neither, and 24 of 530 (5%) pooled; 4 of the 5 strong-model C cases opened by hand looked like answers from the model's own knowledge (the model's own verdict at that step was INSUFFICIENT), 1 was a string-match miss. The small model has 3 C cases in total (1 at step 1), 2 of them string-match misses. So a minority of early correct answers, mostly from the strong model, reflect prior knowledge, which inflates its fixed-1 accuracy a little but not the step-8 comparison. A and B cannot rule out that a model also knew the answer and retrieval confirmed it.
+Reading: at step 8 every correct answer for both models has the answer text or a gold document in context (C = 0), so the final accuracy comes from retrieval in the pooled corpus. C is not empty early on: the strong model answers 10 of its 37 correct step-1 answers (27%) with neither, and 24 of 530 (5%) pooled; 3 of the 5 strong-model C cases opened by hand clearly and 1 possibly looked like answers from the model's own knowledge (the model's own verdict at that step was INSUFFICIENT), 1 was a string-match miss. The small model has 3 C cases in total (1 at step 1), 2 of them string-match misses. So a minority of early correct answers, mostly from the strong model, reflect prior knowledge, which inflates its fixed-1 accuracy a little but not the step-8 comparison. A and B cannot rule out that a model also knew the answer and retrieval confirmed it.
